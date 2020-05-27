@@ -26,10 +26,12 @@ class PhipSimulator(object):
         self.index_oligo_in_ref = {}
         self.sam_fq_fp = {}
         self.added_counts = None
+        self.nt = ["A","T","C","G"]
 
     def generate_metadata(
         self,
-        lib,
+        exp,
+        ref,
         n_samples = 10,
         n_peptides = 10,
         fq_prefix = "sample-1",
@@ -47,9 +49,9 @@ class PhipSimulator(object):
         """
 
         # create peptide metadata by generating random nts
-        ref_fp = open(f"{lib}/peptide_metadata.csv","w")
-        adapter_3 = ''.join(np.random.choice(["A","T","C","G"],adapt_3_length)).lower()
-        adapter_5 = ''.join(np.random.choice(["A","T","C","G"],adapt_5_length)).lower()
+        ref_fp = open(f"{ref}/peptide_metadata.csv","w")
+        adapter_3 = ''.join(np.random.choice(self.nt, adapt_3_length)).lower()
+        adapter_5 = ''.join(np.random.choice(self.nt, adapt_5_length)).lower()
         ref_fp.write("ID,Virus,Protein,Loc,AA,Oligo,Peptide\n")
         for ID in range(n_samples):
             oligo = ''.join(np.random.choice(["A","T","C","G"], tile_length))
@@ -58,12 +60,12 @@ class PhipSimulator(object):
             ref_fp.write(f"{ID},_,_,_,_,{oligo_w_adap},_\n")
         
         # create sample metadata
-        sample_metadata_fp = open(f"{lib}/sample_metadata.csv","w")
-        sample_metadata_fp.write("ID,Sample_name,library,Sample_type,Notes\n")
+        sample_metadata_fp = open(f"samples/sample_metadata.csv","w")
+        sample_metadata_fp.write("ID,fastq_pattern,experiment,reference,Sample_type,Notes\n")
         for sID in range(n_peptides):
-            fq_name = f"{lib}/{fq_prefix}-{sID}.fastq"
+            fq_name = f"{exp}/{fq_prefix}-{sID}.fastq"
             self.sam_fq_fp[sID] = open(fq_name,"w")
-            sample_metadata_fp.write(f"{sID},{fq_pattern}-{sID}.fastq,{lib},_,_\n")
+            sample_metadata_fp.write(f"{sID},{fq_pattern}-{sID}.fastq,{exp},{ref},_,_\n")
                 
 
     def generate_reads(self, counts, n_mismatches=0, read_length=125):
@@ -80,7 +82,7 @@ class PhipSimulator(object):
                     # middle of a read of length, read_length.
                     oligo = self.generate_mismatch(self.index_oligo_in_ref[pID], n_mismatches)
                     n_nt_filler = read_length - len(oligo)
-                    filler = ''.join(np.random.choice(["A","T","C","G"],n_nt_filler))
+                    filler = ''.join(np.random.choice(self.nt, n_nt_filler))
                     split = np.random.choice(range(n_nt_filler))
                     read = filler[:split] + oligo + filler[split:]
                     assert(len(read) == read_length)
@@ -122,7 +124,7 @@ if __name__ == "__main__":
     n_peptides = 10
 
     ps = PhipSimulator()
-    ps.generate_metadata("lib_ones")
+    ps.generate_metadata(exp="lib_ones",ref="refa")
 
     # generate one "zero mismatch" read for each entry,
     # so the expected counts matrix will be 10 x 10 with 

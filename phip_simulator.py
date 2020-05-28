@@ -1,12 +1,21 @@
 """
 @Author: Jared Galloway
-@date: 
+@date: 5/26/2020
 
 phip-seq data set simulator.
 
 The idea here being the simulation 
 gives us an expected outcome from the pipeline,
-this is purely for testing.
+this is purely for testing purposes at the moment.
+
+TODO: should this be part of phippery or it's own
+thing entirely?
+
+TODO: random thought that probably doesn't belong
+here, should phippery-utils and phippery be seperate 
+commands themselves? like maybe phippery should be purely
+after a statistical tool for the matrices. This could just be
+seperate cli entrypoints
 """
 
 import numpy as np
@@ -80,7 +89,9 @@ class PhipSimulator(object):
 
                     # place the oligo from the reference somewhere in the
                     # middle of a read of length, read_length.
-                    oligo = self.generate_mismatch(self.index_oligo_in_ref[pID], n_mismatches)
+                    oligo = self.generate_mismatch(
+                        self.index_oligo_in_ref[pID], n_mismatches
+                    )
                     n_nt_filler = read_length - len(oligo)
                     filler = ''.join(np.random.choice(self.nt, n_nt_filler))
                     split = np.random.choice(range(n_nt_filler))

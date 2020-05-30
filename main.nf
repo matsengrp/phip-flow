@@ -115,9 +115,17 @@ process short_read_alignment {
             file(technical_replicates)
         ) from index_sample_ch 
 
+    //output:
+        //set(
+        //    val(ID)
+        //    file("out")
+        //) into aligned_reads_ch
+
     shell:
     """
-    bowtie ${index}/${ref_name} ${technical_replicates.toString()} --sam
+    bowtie --trim3 32 -n 0 -l 93 --tryhard --nomaqround \
+    --norc --best --sam --quiet \
+    ${index}/${ref_name} ${technical_replicates.toString()} > out.sam
     """    
 }
 

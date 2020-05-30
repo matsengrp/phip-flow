@@ -29,10 +29,16 @@ process generate_fasta_reference {
     container 'phippery:latest'    
 
     input:
-        tuple val(ref_name), file("pep_ref") from ref_tuple_channel
+        set( 
+            val(ref_name), 
+            file("pep_ref") 
+        ) from ref_tuple_channel
 
     output:
-        tuple val(ref_name), file("${ref_name}.fasta") into pep_channel_fasta
+        set( 
+            val(ref_name), 
+            file("${ref_name}.fasta") 
+        ) into pep_channel_fasta
 
     shell:    
     """
@@ -47,10 +53,16 @@ process generate_index {
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
 
     input:
-        tuple val(ref_name), file("pep_fasta") from pep_channel_fasta
+        set( 
+            val(ref_name), 
+            file("pep_fasta") 
+        ) from pep_channel_fasta
 
     output:
-        tuple val(ref_name), file("${ref_name}_index") into pep_channel_index
+        set(
+            val(ref_name), 
+            file("${ref_name}_index") 
+        ) into pep_channel_index
 
     shell:    
     """
@@ -96,17 +108,17 @@ process short_read_alignment {
     echo true
 
     input:
-        tuple val(ID), val(ref_name), file(index), file(technical_replicates) from index_sample_ch 
+        set( 
+            val(ID), 
+            val(ref_name), 
+            file(index), 
+            file(technical_replicates)
+        ) from index_sample_ch 
 
     shell:
     """
-    echo ID: ${ID}
-    echo ref name: ${ref_name}
-    echo index: ${index}
-    echo technical replicates: ${technical_replicates}
-    bowtie ${index}/ ${technical_replicates}
+    bowtie ${index}/${ref_name} ${technical_replicates.toString()} --sam
     """    
-    
 }
 
 

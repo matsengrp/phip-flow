@@ -8,4 +8,5 @@ nextflow \
     -params-file config.json \
     -with-report output/nextflow_report.html \
     -work-dir output/work/ \
+    -ansi-log false \
     -resume

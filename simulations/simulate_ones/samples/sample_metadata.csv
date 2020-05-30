@@ -1,0 +1,11 @@
+ID,fastq_pattern,reference,experiment
+0,sample-*-0,refa,expa
+1,sample-*-1,refa,expa
+2,xeno-AE-122-*-R1.3.3.0,refa,expa
+3,xeno-AE-122-*-R1.3.3.1,refa,expa
+4,xeno-AE-122-*-R1.3.3.2,refa,expa
+5,xeno-AE-122-*-R1.3.3.3,refb,expb
+6,xeno-AE-122-*-R1.3.3.4,refb,expb
+7,johnny-boy-*-0,refb,expb
+8,johnny-boy-*-1,refb,expb
+9,johnny-boy-*-2,refb,expb

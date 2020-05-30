@@ -8,10 +8,6 @@ Jared Galloway: 5/26/2020
 */
 
 
-log.info('main.nf is running')
-
-// parse the config file giving us 
-// details about the 
 import groovy.json.JsonSlurper
 def jsonSlurper = new JsonSlurper()
 params.configFileJS = "config.json"
@@ -19,58 +15,108 @@ String configJSON = new File("${params.configFileJS}").text
 def config = jsonSlurper.parseText(configJSON)
 assert config instanceof Map
 
-references = config["references"].values()
-println references.getClass()
-pep_md_fp = new ArrayList<String>(config["references"].values());
-pep_channel = Channel.fromPath(pep_md_fp)
-//pep_channel.subscribe { println "value: $it" }
+ref_tuple_channel = Channel
+    .fromList(
+        config["references"].collect { key, val ->
+            new Tuple(key, file(val))
+        }
+    )
 
 
+process generate_fasta_reference {
 
-// TODO: you should pss ref name and file? for index naming and whatnot
-// TODO: should we have an option to publish the directory somewhere for int. files?
-process create_fasta_reference {
-
-    // TODO publish this on quay
+    publishDir "$config.output_dir/references/"
     container 'phippery:latest'    
 
     input:
-    file pep_ref from pep_channel
+        tuple val(ref_name), file("pep_ref") from ref_tuple_channel
 
     output:
-    file "${pep_ref}.fasta" into pep_channel_fasta
+        tuple val(ref_name), file("${ref_name}.fasta") into pep_channel_fasta
 
-    // TODO let's strip the .csv fe off of the fasta file    
     shell:    
     """
-    phippery peptide-md-to-fasta -d ${pep_ref} -o ${pep_ref}.fasta
+    phippery peptide-md-to-fasta -d ${pep_ref} -o ${ref_name}.fasta
     """
 }
 
 
-// this is going to take in all fastq files from samples.
-// input channel for fastq should be all samples split by
-// reference library.
-process create_index {
+process generate_index {
  
+    publishDir "$config.output_dir/references/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
 
     input:
-    file pep_fasta from pep_channel_fasta.flatten()
+        tuple val(ref_name), file("pep_fasta") from pep_channel_fasta
 
     output:
-    file "Index" into pep_channel_Index
-   
-    // TODO  
+        tuple val(ref_name), file("${ref_name}_index") into pep_channel_index
+
     shell:    
     """
-    mkdir Index
-    bowtie-build ${pep_fasta} Index/${pep_fasta}
+    mkdir ${ref_name}_index
+    bowtie-build ${pep_fasta} ${ref_name}_index/${ref_name}
     """
-
 }
 
-pep_channel_Index.subscribe {println it}
+
+Channel
+    .fromPath(config["samples"])
+    .splitCsv(header:true)
+    .map{ row -> 
+        tuple(
+            row.reference,
+            row.ID,
+            new File(config["experiments"][row.experiment], row.fastq_pattern)
+        ) 
+    }
+    .set { samples_ch }
+
+index_sample_ch = pep_channel_index
+    .cross(samples_ch)
+    .map{ ref, sample ->
+        tuple(
+            sample[1],
+            ref[0],
+            file(ref[1]),
+            file(sample[2])
+        )
+    }
+    //.subscribe {
+    //    println it
+    //    it.each { arg ->
+    //        println arg.getClass()
+    //    }
+    //}
+
+process short_read_alignment {
+
+    publishDir "$config.output_dir/references/"
+    container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
+    echo true
+
+    input:
+        tuple val(ID), val(ref_name), file(index), file(technical_replicates) from index_sample_ch 
+
+    shell:
+    """
+    echo ID: ${ID}
+    echo ref name: ${ref_name}
+    echo index: ${index}
+    echo technical replicates: ${technical_replicates}
+    bowtie ${index}/ ${technical_replicates}
+    """    
+    
+}
+
+
+
+
+
+
+
+
+
 
 
 

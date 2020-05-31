@@ -12,8 +12,10 @@ this is purely for testing purposes at the moment.
 import numpy as np
 import pandas as pd
 import os
+from pathlib import Path
 
 nt = ["A","T","C","G"]  
+
 
 def create_peptide_metadata(
     n_peptides=10,
@@ -69,14 +71,14 @@ def generate_reads(
                     ),
                     num_mm = n_mismatches
                 )
-
+                
                 n_nt_filler = read_length - len(oligo)
-                filler = ''.join(np.random.choice(nt, n_nt_filler))
-                split = np.random.choice(range(n_nt_filler))
-                read = filler[:split] + oligo + filler[split:]
+                if n_nt_filler > 0:
+                    filler = ''.join(np.random.choice(nt, n_nt_filler))
+                    split = np.random.choice(range(n_nt_filler))
+                    oligo = filler[:split] + oligo + filler[split:]
                 qscore = "F" * read_length 
-                sample_fqfp[sID].write(f"@\n{read}\n+\n{qscore}\n")
-
+                sample_fqfp[sID].write(f"@\n{oligo}\n+\n{qscore}\n")
 
 
 def generate_mismatch(sequence, num_mm):
@@ -94,5 +96,36 @@ def generate_mismatch(sequence, num_mm):
         else:
             mismatch_sequence += np.random.choice(list(nts - set(nt)))
     return mismatch_sequence
+
+
+def generate_directory_structure(config_dict):
+    """
+    Take in a dictionary describing the directory structure
+    for a simulated dataset and create it
+    """
+
+    required = [
+        "output_dir",
+        "references",
+        "experiments",
+        "samples"
+    ]
+    
+    assert np.all([req in config_dict for req in required])
+    
+    base_dir = config_dict["output_dir"]
+    for req in required:
+        Path(os.path.join(base_dir,req)).mkdir(parents=True, exist_ok=True)
+    for experiment in config_dict["experiments"]:
+        Path(
+            os.path.dirname(config_dict["experiments"][experiment])
+        ).mkdir(parents=True, exist_ok=True)
+    for experiment in config_dict["references"]:
+        Path(
+            os.path.dirname(config_dict["references"][experiment])
+        ).mkdir(parents=True, exist_ok=True)
+
+
+
 
 

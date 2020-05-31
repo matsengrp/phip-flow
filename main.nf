@@ -10,7 +10,7 @@ Jared Galloway: 5/26/2020
 
 import groovy.json.JsonSlurper
 def jsonSlurper = new JsonSlurper()
-params.configFileJS = "config.json"
+params.configFileJS = params.params_file
 String configJSON = new File("${params.configFileJS}").text
 def config = jsonSlurper.parseText(configJSON)
 assert config instanceof Map
@@ -71,6 +71,59 @@ process generate_index {
     """
 }
 
+//import static groovy.io.FileType.FILES
+
+//new File('.').eachFileRecurse(FILES) {
+//    if(it.name.endsWith('.groovy')) {
+//        println it
+//    }
+//}
+
+//def result
+//
+//findTxtFileClos = {
+//
+//        it.eachDir(findTxtFileClos);
+//        it.eachFileMatch(~/.*.txt/) {file ->
+//                result += "${file.absolutePath}\n"
+//        }
+//    }
+//
+//// Apply closure
+//findTxtFileClos(new File(config["samples"]))
+//
+//println result
+
+//channel
+//    .fromFilePairs(
+//    //.fromPath(config["samples"])
+//    file(config["samples"])
+//    .splitCsv(header:true)
+//    .map{ row -> 
+//            //file(new File(config["experiments"][row.experiment], row.fastq_pattern))
+//            new File(config["experiments"][row.experiment], row.fastq_pattern)
+//        //) 
+//    })
+//    //.set { samples_ch }
+//    .subscribe { println it }
+
+//index_sample_ch = pep_channel_index
+//    .cross(samples_ch)
+//    .map{ ref, sample ->
+//        tuple(
+//            sample[1],
+//            ref[0],
+//            //sample[2] // remember pattern for now.
+//            file(ref[1]), // TODO, this is already a file.
+//            file(sample[2])
+//        )
+//    }
+    //.subscribe {
+    //    println it
+    //    it.each { arg ->
+    //        println arg.getClass()
+    //    }
+    //}
 
 Channel
     .fromPath(config["samples"])
@@ -90,7 +143,8 @@ index_sample_ch = pep_channel_index
         tuple(
             sample[1],
             ref[0],
-            file(ref[1]),
+            //sample[2] // remember pattern for now.
+            file(ref[1]), // TODO, this is already a file.
             file(sample[2])
         )
     }
@@ -101,11 +155,11 @@ index_sample_ch = pep_channel_index
     //    }
     //}
 
+
 process short_read_alignment {
 
-    publishDir "$config.output_dir/references/"
-    container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
-    echo true
+    publishDir "$config.output_dir/alignments/$ref_name/"
+    container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
 
     input:
         set( 
@@ -115,23 +169,35 @@ process short_read_alignment {
             file(technical_replicates)
         ) from index_sample_ch 
 
-    //output:
-        //set(
-        //    val(ID)
-        //    file("out")
-        //) into aligned_reads_ch
+    output:
+        set(
+            val(ID),
+            val(ref_name),
+            file("${ID}.sam")
+        ) into aligned_reads_ch
 
+    // TODO obviously we are going to need different alignment
+    // schemes for phage-dma, phip-seq, simulation testing.
+    // TODO should we be doing local alignment?
+    // like, aren't the reads going to be longer than the reference library
+    // peptides?
     shell:
     """
-    bowtie --trim3 32 -n 0 -l 93 --tryhard --nomaqround \
-    --norc --best --sam --quiet \
-    ${index}/${ref_name} ${technical_replicates.toString()} > out.sam
+    
+    for replicate in ${technical_replicates.toString()};
+    do
+        bowtie -v 2 --tryhard --sam \
+        ${index}/${ref_name} ${technical_replicates.toString()} > ${ID}.sam;
+    done;
     """    
 }
 
 
-
-
+//process generate_counts {
+    
+//    publishDir "$config.output_dir/counts/$ref_name"
+//    container ''
+//}
 
 
 

@@ -1,0 +1,13 @@
+{
+    "output_dir" : "simulations/simulate_tiny",
+
+    "samples" : "simulations/simulate_tiny/samples/sample_metadata.csv",
+
+    "experiments" : {
+        "expa" : "simulations/simulate_tiny/experiments/expa/some/path/"
+    },
+
+    "references" : {
+        "refa" : "simulations/simulate_tiny/references/peptide_metadata_a.csv"
+    }
+}

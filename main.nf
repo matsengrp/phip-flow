@@ -118,7 +118,7 @@ process short_read_alignment {
 
     publishDir "$config.output_dir/alignments/$ref_name/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
-    echo true 
+    //echo true 
 
     input:
         set( 
@@ -135,30 +135,58 @@ process short_read_alignment {
             val(replicate_number),
             val(ref_name),
             file("${ID}.${replicate_number}.sam")
-        ) into aligned_reads_ch
+        ) into aligned_reads_sam
 
     // TODO obviously we are going to need different alignment
     // schemes for phage-dma, phip-seq, simulation testing.
+    // the "v" option is a place holder for simulation testing.
     // TODO should we be doing local alignment?
     // like, aren't the reads going to be longer than the reference library
     // peptides?
     shell:
     """
-    echo blacksheep > ${ID}.${replicate_number}.sam
-    echo Unique sample ID: ${ID}
-    echo replicate number: ${replicate_number}
-    echo reference name: ${ref_name}
-    echo reference dir location: ${index}
+    bowtie -v 2 --tryhard --sam \
+    ${index}/${ref_name} ${respective_replicate_path} \
+    > ${ID}.${replicate_number}.sam;
     """    
-    //bowtie -v 2 --tryhard --sam \
-    //${index}/${ref_name} ${technical_replicates.toString()} > ${ID}.sam;
 }
 
-//process generate_counts {
+// how might we seperate channels and pricesses based upon reference?
+process sam_to_bam {
     
-//    publishDir "$config.output_dir/counts/$ref_name"
-//    container ''
-//}
+    publishDir "$config.output_dir/alignments/$ref_name"
+    container 'quay.io/biocontainers/samtools:1.3--h0592bc0_3'
+
+    input:
+        set(
+            val(ID),
+            val(replicate_number),
+            val(ref_name),
+            file(sam_files)
+        ) from aligned_reads_sam
+
+    output:
+        set(
+            val(ID),
+            val(replicate_number),
+            val(ref_name),
+            file("${ID}.${replicate_number}.bam")
+        ) into aligned_reads_bam
+
+    script:
+    """
+    samtools view -S -b ${ID}.${replicate_number}.sam \
+    > ${ID}.${replicate_number}.bam
+    rm ${ID}.${replicate_number}.sam
+    """
+}
+
+aligned_reads_bam.subscribe {println it}
+
+//now we need channels which collect all refa/refb counts, shouls these channels be split?
+
+
+
 
 
 

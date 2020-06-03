@@ -51,3 +51,11 @@ if __name__ == "__main__":
         config,
         read_length=93,
         replicate_number=1)
+
+    generate_reads(
+        counts,
+        sample_metadata, 
+        peptide_metadata_refa, 
+        config,
+        read_length=93,
+        replicate_number=2)

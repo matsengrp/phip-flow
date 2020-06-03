@@ -21,7 +21,7 @@ ref_tuple_channel = Channel
         }
     )
 
-
+//TODO all process should _optionally_ publishDir
 process generate_fasta_reference {
 
     publishDir "$config.output_dir/references/"
@@ -118,7 +118,7 @@ process short_read_alignment {
 
     publishDir "$config.output_dir/alignments/$ref_name/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
-    echo true 
+    //echo true 
 
     input:
         set( 
@@ -135,35 +135,88 @@ process short_read_alignment {
             val(replicate_number),
             val(ref_name),
             file("${ID}.${replicate_number}.sam")
-        ) into aligned_reads_ch
+        ) into aligned_reads_sam
 
     // TODO obviously we are going to need different alignment
     // schemes for phage-dma, phip-seq, simulation testing.
+    // the "v" option is a place holder for simulation testing.
     // TODO should we be doing local alignment?
     // like, aren't the reads going to be longer than the reference library
     // peptides?
     shell:
     """
-    echo blacksheep > ${ID}.${replicate_number}.sam
-    echo Unique sample ID: ${ID}
-    echo replicate number: ${replicate_number}
-    echo reference name: ${ref_name}
-    echo reference dir location: ${index}
+    bowtie -v 2 --tryhard --sam \
+    ${index}/${ref_name} ${respective_replicate_path} \
+    > ${ID}.${replicate_number}.sam;
     """    
-    //bowtie -v 2 --tryhard --sam \
-    //${index}/${ref_name} ${technical_replicates.toString()} > ${ID}.sam;
 }
 
-//process generate_counts {
+// how might we seperate channels and pricesses based upon reference?
+process sam_to_counts {
     
-//    publishDir "$config.output_dir/counts/$ref_name"
-//    container ''
-//}
+    publishDir "$config.output_dir/alignments/$ref_name"
+    container 'quay.io/biocontainers/samtools:1.3--h0592bc0_3'
 
+    input:
+        set(
+            val(ID),
+            val(replicate_number),
+            val(ref_name),
+            file(sam_file)
+        ) from aligned_reads_sam
 
+    output:
+        set(
+            val(ref_name),
+            file("${ID}.${replicate_number}.tsv")
+        ) into counts
 
+    // TODO, is the second 'sort' necessary?
+    // TODO, should we rm all intermediary files?
+    script:
+    """
+    samtools view -u ${sam_file} | \
+    samtools sort - > ${ID}.${replicate_number}.bam
+    samtools sort ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
+    mv ${ID}.${replicate_number}.sorted ${ID}.${replicate_number}.bam
+    samtools index -b ${ID}.${replicate_number}.bam
+    samtools idxstats ${ID}.${replicate_number}.bam | \
+    cut -f 1,3 | sed "/^*/d" > ${ID}.${replicate_number}.tsv
+    """
+}
 
+grouped_counts = counts
+    .groupTuple()
+    .map{ ref_name, tsv ->
+        tuple(
+            ref_name,
+            file(config["references"][ref_name]),
+            file(config["samples"]),
+            tsv
+        )
+    }
+    
+process collect_phip_data {
+    
+    publishDir "$config.output_dir/phip_data/"
+    container 'phippery:latest'    
 
+    input:
+        set (
+            val(ref_name),
+            file(pep_meta),
+            file(sam_meta),
+            file(all_counts_files)    
+        ) from grouped_counts 
 
+    output:
+        file "${ref_name}.phip" into phip_data_ch
 
+    script:
+    """
+    phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
+    -o ${ref_name}.phip ${all_counts_files}
+    """ 
+}
 
+phip_data_ch.subscribe{println it}

@@ -7,7 +7,6 @@ and the phippery tool
 Jared Galloway: 5/26/2020
 */
 
-
 import groovy.json.JsonSlurper
 def jsonSlurper = new JsonSlurper()
 params.configFileJS = params.params_file
@@ -71,59 +70,6 @@ process generate_index {
     """
 }
 
-//import static groovy.io.FileType.FILES
-
-//new File('.').eachFileRecurse(FILES) {
-//    if(it.name.endsWith('.groovy')) {
-//        println it
-//    }
-//}
-
-//def result
-//
-//findTxtFileClos = {
-//
-//        it.eachDir(findTxtFileClos);
-//        it.eachFileMatch(~/.*.txt/) {file ->
-//                result += "${file.absolutePath}\n"
-//        }
-//    }
-//
-//// Apply closure
-//findTxtFileClos(new File(config["samples"]))
-//
-//println result
-
-//channel
-//    .fromFilePairs(
-//    //.fromPath(config["samples"])
-//    file(config["samples"])
-//    .splitCsv(header:true)
-//    .map{ row -> 
-//            //file(new File(config["experiments"][row.experiment], row.fastq_pattern))
-//            new File(config["experiments"][row.experiment], row.fastq_pattern)
-//        //) 
-//    })
-//    //.set { samples_ch }
-//    .subscribe { println it }
-
-//index_sample_ch = pep_channel_index
-//    .cross(samples_ch)
-//    .map{ ref, sample ->
-//        tuple(
-//            sample[1],
-//            ref[0],
-//            //sample[2] // remember pattern for now.
-//            file(ref[1]), // TODO, this is already a file.
-//            file(sample[2])
-//        )
-//    }
-    //.subscribe {
-    //    println it
-    //    it.each { arg ->
-    //        println arg.getClass()
-    //    }
-    //}
 
 Channel
     .fromPath(config["samples"])
@@ -137,43 +83,58 @@ Channel
     }
     .set { samples_ch }
 
+
+// TODO, this could be cleaned up so .flatMap does all the work,
+// and we can get rid of .map all together.
 index_sample_ch = pep_channel_index
     .cross(samples_ch)
     .map{ ref, sample ->
         tuple(
             sample[1],
             ref[0],
-            //sample[2] // remember pattern for now.
             file(ref[1]), // TODO, this is already a file.
             file(sample[2])
         )
     }
-    //.subscribe {
-    //    println it
-    //    it.each { arg ->
-    //        println arg.getClass()
-    //    }
+    .flatMap{t ->
+        t[3].withIndex().collect{ replicate_path, replicate_idx ->
+            tuple(
+                t[0], //id
+                replicate_idx,
+                t[1], //ref name
+                t[2], //ref dir
+                replicate_path
+            )
+        }
+    }
+    //.subscribe { 
+        //println "$it"
+        //it.each { arg ->
+        //    println arg.getClass()
+        //}
     //}
-
 
 process short_read_alignment {
 
     publishDir "$config.output_dir/alignments/$ref_name/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
+    echo true 
 
     input:
         set( 
             val(ID), 
+            val(replicate_number),
             val(ref_name), 
             file(index), 
-            file(technical_replicates)
+            file(respective_replicate_path)
         ) from index_sample_ch 
 
     output:
         set(
             val(ID),
+            val(replicate_number),
             val(ref_name),
-            file("${ID}.sam")
+            file("${ID}.${replicate_number}.sam")
         ) into aligned_reads_ch
 
     // TODO obviously we are going to need different alignment
@@ -183,15 +144,15 @@ process short_read_alignment {
     // peptides?
     shell:
     """
-    
-    for replicate in ${technical_replicates.toString()};
-    do
-        bowtie -v 2 --tryhard --sam \
-        ${index}/${ref_name} ${technical_replicates.toString()} > ${ID}.sam;
-    done;
+    echo blacksheep > ${ID}.${replicate_number}.sam
+    echo Unique sample ID: ${ID}
+    echo replicate number: ${replicate_number}
+    echo reference name: ${ref_name}
+    echo reference dir location: ${index}
     """    
+    //bowtie -v 2 --tryhard --sam \
+    //${index}/${ref_name} ${technical_replicates.toString()} > ${ID}.sam;
 }
-
 
 //process generate_counts {
     

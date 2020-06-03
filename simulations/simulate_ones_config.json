@@ -1,0 +1,16 @@
+
+{
+    "output_dir" : "simulations/simulate_ones/",
+
+    "samples" : "simulations/simulate_ones/samples/sample_metadata.csv",
+
+    "experiments" : {
+        "expa" : "simulations/simulate_ones/experiments/expa/some/path/",
+        "expb" : "simulations/simulate_ones/experiments/expb/some/path/"
+    },
+
+    "references" : {
+        "refa" : "simulations/simulate_ones/references/peptide_metadata_a.csv",
+        "refb" : "simulations/simulate_ones/references/peptide_metadata_b.csv"
+    }
+}

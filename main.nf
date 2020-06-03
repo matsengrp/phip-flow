@@ -21,7 +21,7 @@ ref_tuple_channel = Channel
         }
     )
 
-
+//TODO all process should _optionally_ publishDir
 process generate_fasta_reference {
 
     publishDir "$config.output_dir/references/"
@@ -152,7 +152,7 @@ process short_read_alignment {
 }
 
 // how might we seperate channels and pricesses based upon reference?
-process sam_to_bam {
+process sam_to_counts {
     
     publishDir "$config.output_dir/alignments/$ref_name"
     container 'quay.io/biocontainers/samtools:1.3--h0592bc0_3'
@@ -162,36 +162,62 @@ process sam_to_bam {
             val(ID),
             val(replicate_number),
             val(ref_name),
-            file(sam_files)
+            file(sam_file)
         ) from aligned_reads_sam
 
     output:
         set(
-            val(ID),
-            val(replicate_number),
             val(ref_name),
-            file("${ID}.${replicate_number}.bam")
-        ) into aligned_reads_bam
+            file("${ID}.${replicate_number}.tsv")
+        ) into counts
 
+    // TODO, is the second 'sort' necessary?
+    // TODO, should we rm all intermediary files?
     script:
     """
-    samtools view -S -b ${ID}.${replicate_number}.sam \
-    > ${ID}.${replicate_number}.bam
-    rm ${ID}.${replicate_number}.sam
+    samtools view -u ${sam_file} | \
+    samtools sort - > ${ID}.${replicate_number}.bam
+    samtools sort ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
+    mv ${ID}.${replicate_number}.sorted ${ID}.${replicate_number}.bam
+    samtools index -b ${ID}.${replicate_number}.bam
+    samtools idxstats ${ID}.${replicate_number}.bam | \
+    cut -f 1,3 | sed "/^*/d" > ${ID}.${replicate_number}.tsv
     """
 }
 
-aligned_reads_bam.subscribe {println it}
+grouped_counts = counts
+    .groupTuple()
+    .map{ ref_name, tsv ->
+        tuple(
+            ref_name,
+            file(config["references"][ref_name]),
+            file(config["samples"]),
+            tsv
+        )
+    }
+    //.subscribe {println "YOOOOO ${it}"}
+    
+process collect_phip_data {
+    
+    publishDir "$config.output_dir/phip_data/"
+    container 'phippery:latest'    
 
-//now we need channels which collect all refa/refb counts, shouls these channels be split?
+    input:
+        set (
+            val(ref_name),
+            file(pep_meta),
+            file(sam_meta),
+            file(all_counts_files)    
+        ) from grouped_counts 
 
+    output:
+        file "${ref_name}.phip" into phip_data_ch
 
+    script:
+    """
+    phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
+    -o ${ref_name}.phip ${all_counts_files}
+    """ 
+}
 
-
-
-
-
-
-
-
-
+phip_data_ch.subscribe{println it}

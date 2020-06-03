@@ -195,7 +195,6 @@ grouped_counts = counts
             tsv
         )
     }
-    //.subscribe {println "YOOOOO ${it}"}
     
 process collect_phip_data {
     

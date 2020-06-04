@@ -25,7 +25,7 @@ ref_tuple_channel = Channel
 process generate_fasta_reference {
 
     publishDir "$config.output_dir/references/"
-    container 'phippery:latest'    
+    container 'quay.io/matsengrp/phippery'    
 
     input:
         set( 
@@ -193,7 +193,7 @@ grouped_counts = counts
 process collect_phip_data {
     
     publishDir "$config.output_dir/phip_data/"
-    container 'phippery:latest'    
+    container 'quay.io/matsengrp/phippery'    
 
     input:
         set (

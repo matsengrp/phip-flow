@@ -54,16 +54,17 @@ these are the _required_ fields, but other metadata you would like for downstrea
 analysis should be tied in here, too. and example might look like:
 
 ```
-ID,fastq_pattern,experiment,reference,Sample_type,Notes
-0,sample-*-0.fastq,lib_ones,refa,_,_
-1,sample-*-1.fastq,lib_ones,refa,_,_
-2,sample-*-2.fastq,lib_ones,refa,_,_
-3,sample-*-3.fastq,lib_ones,refa,_,_
-4,sample-*-4.fastq,lib_ones,refa,_,_
-5,sample-*-5.fastq,lib_ones,refa,_,_
-6,sample-*-6.fastq,lib_ones,refa,_,_
-7,sample-*-7.fastq,lib_ones,refa,_,_
-8,sample-*-8.fastq,lib_ones,refa,_,_
+ID,fastq_pattern,reference,experiment
+0,sample-*-0,refa,expa
+1,sample-*-1,refa,expa
+2,xeno-AE-122-*-R1.3.3.0,refa,expa
+3,xeno-AE-122-*-R1.3.3.1,refa,expa
+4,xeno-AE-122-*-R1.3.3.2,refa,expa
+5,xeno-AE-122-*-R1.3.3.3,refb,expb
+6,xeno-AE-122-*-R1.3.3.4,refb,expb
+7,johnny-boy-*-0,refb,expb
+8,johnny-boy-*-1,refb,expb
+9,johnny-boy-*-2,refb,expb
 ```
 
 ## Peptide Metadata

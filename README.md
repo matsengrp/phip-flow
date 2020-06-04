@@ -129,6 +129,32 @@ This is because the sample metadata is expected to have columns specifying
 the associated _experiment_ ("expa", "expb") and _reference_ ("refa", "refb") 
 for each sample provided. 
 
+## Testing pipeline with simulation
+
+To test the pipeline and hueristics within the pipeline, it is helpful
+to simulate some sequencing files and metadata for which we 
+know the expected result (counts table) from the pipeline, given this data.
+The file `simulations/phip_simulator_utils.py` provides some useful
+functions to simulate a dataset. The user then writes a script 
+using these utilities to define reads for
+any sample/peptide combination by supplying a matrix of counts for each
+n-mismatch profile.
+
+To sun the simulation, you simply need `python3`, `numpy`, and `pandas`.
+A conda environment can be created for this using the `environment.yaml`
+file in the simulations directory, like so:
+
+```
+cd simulations && conda env create -f environment.yaml
+conda activate phip-simulation
+```
+
+Then, create a custom script and config file using the phip_simulation_utils
+provided. Some examples of these can be found in the simulations directory.
+
+
+
+
 
 
 

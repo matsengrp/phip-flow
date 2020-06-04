@@ -1,0 +1,10 @@
+name: phip-simulation
+channels:
+  - anaconda
+  - bioconda
+  - conda-forge
+dependencies:
+  - python=3.6
+  - pandas
+  - numpy
+

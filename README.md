@@ -54,16 +54,17 @@ these are the _required_ fields, but other metadata you would like for downstrea
 analysis should be tied in here, too. and example might look like:
 
 ```
-ID,fastq_pattern,experiment,reference,Sample_type,Notes
-0,sample-*-0.fastq,lib_ones,refa,_,_
-1,sample-*-1.fastq,lib_ones,refa,_,_
-2,sample-*-2.fastq,lib_ones,refa,_,_
-3,sample-*-3.fastq,lib_ones,refa,_,_
-4,sample-*-4.fastq,lib_ones,refa,_,_
-5,sample-*-5.fastq,lib_ones,refa,_,_
-6,sample-*-6.fastq,lib_ones,refa,_,_
-7,sample-*-7.fastq,lib_ones,refa,_,_
-8,sample-*-8.fastq,lib_ones,refa,_,_
+ID,fastq_pattern,reference,experiment
+0,sample-*-0,refa,expa
+1,sample-*-1,refa,expa
+2,xeno-AE-122-*-R1.3.3.0,refa,expa
+3,xeno-AE-122-*-R1.3.3.1,refa,expa
+4,xeno-AE-122-*-R1.3.3.2,refa,expa
+5,xeno-AE-122-*-R1.3.3.3,refb,expb
+6,xeno-AE-122-*-R1.3.3.4,refb,expb
+7,johnny-boy-*-0,refb,expb
+8,johnny-boy-*-1,refb,expb
+9,johnny-boy-*-2,refb,expb
 ```
 
 ## Peptide Metadata
@@ -127,6 +128,32 @@ Notice that that _experiments_ and _references_ are both collections themselves.
 This is because the sample metadata is expected to have columns specifying
 the associated _experiment_ ("expa", "expb") and _reference_ ("refa", "refb") 
 for each sample provided. 
+
+## Testing pipeline with simulation
+
+To test the pipeline and hueristics within the pipeline, it is helpful
+to simulate some sequencing files and metadata for which we 
+know the expected result (counts table) from the pipeline, given this data.
+The file `simulations/phip_simulator_utils.py` provides some useful
+functions to simulate a dataset. The user then writes a script 
+using these utilities to define reads for
+any sample/peptide combination by supplying a matrix of counts for each
+n-mismatch profile.
+
+To sun the simulation, you simply need `python3`, `numpy`, and `pandas`.
+A conda environment can be created for this using the `environment.yaml`
+file in the simulations directory, like so:
+
+```
+cd simulations && conda env create -f environment.yaml
+conda activate phip-simulation
+```
+
+Then, create a custom script and config file using the phip_simulation_utils
+provided. Some examples of these can be found in the simulations directory.
+
+
+
 
 
 

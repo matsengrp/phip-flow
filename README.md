@@ -1,27 +1,38 @@
 # phippery-experiments
 
-This repo contains the code for the PhIP-Seq, analysis pipeline.
+This repo contains the code for the 
+[PhIP-Seq](https://www.nature.com/articles/s41596-018-0025-6), 
+analysis pipeline.
 Implimented in 
-[Nextflow](TODO),
-this pipeline takes sample library metadata and sample metadata
-in the form of csv files (TODO tsv, too) where the first column
-of each file is a unique identifier for the specific sample or peptide 
-of interest. The pipeline then reads in associated, 
-demiplexed fastq sequencing files for each sample
-and aligns them to their respective peptide reference library before 
-merging all counts into a coherent counts matrix, $M$. Concretely,
-If sample $j$ contains N aligned hits with peptide $i$, then
+[Nextflow](https://www.nextflow.io/docs/latest/channel.html).
 
-```
-$$M_{i}{j} = N$$
-```
+this pipeline requires
+(1) a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
+(2) a (number of) csv peptide metadata file(s) specifying the oligo sequence 
+for each peptide in the library prepared for Immuno-Precitation (IP).
+
+(3) Finally, the user provides a configuarion file in the form a
+[JSON]() 
+file to specify file paths to metadata and sequencing files
+relative to the working directory of pipeline execution.
+We build the index reference
+and use
+[Bowtie]() 
+for short read alignment samples to their respective peptide reference library.
+The pipeline then merges all alignemnt hit counts into a coherent counts matrix, _M_. 
+Concretely, If sample $j$ contains N aligned hits with peptide $i$, then
+
+_M_[i][j] = _N_
 
 This matrix and associated metadata on both axis
 can then be used for various statistical queries
 or dumped to csv for third-party analysis. 
 
-The last thing required by the pipeline is a JSON
-formatted config file specifying the location of required data.
+It's important to note that each sample is associated with a peptide library
+for which the IP experiment was run. The respective library for each sample 
+in the sample metadata file is defined by a single peptide 
+should
+
 
 ## Sample Metadata
 
@@ -60,9 +71,58 @@ ID,fastq_pattern,experiment,reference,Sample_type,Notes
 ## Peptide Metadata
 
 Another simple csv containing some metadata for each peptide.
-Each peptide (row) is defined by
+Each peptide (row) is defined by:
 
-TODO
+ 1. `ID` <int> - A unique identifier to forever tie this peptide to it's
+    counts for each peptide and metadata for downstream analysis.
+
+ 2. `Oligo` <str> - the oligo nucleotide sequence defining the expressed
+    protein. All Oligos in a peptide_metadata consititute a single library
+    used to create the Index. Currently, we only support uppercase representing
+    the oligo, every lowercase charictar will be considered an adapter sequence,
+    and left out of the Index each sample is aligned against.
+
+these are the _required_ fields, but other metadata you would like for downstream
+analysis should be tied in here, too. and example might look like:
+
+```
+ID,Oligo
+0,gcatcagtaggctgcgtaGGGATTAGGCGGACCTCCATGAATACCGCCATCACAACGCGACCCTGGCTAGCGGCGTTCACGATCAAAGTTACTTTAGTCATGGCTCCATACtcgttaatatgcctgt
+1,gcatcagtaggctgcgtaTGTAGGCAAGGAGCAACACTTCTTCTTTGAACTAAGGCTCGCAGAAGTCCCCCATTCTAGCAGGCCGTGCGATCGGGACCGTCGCTTTATTTCtcgttaatatgcctgt
+2,gcatcagtaggctgcgtaGAGAATGGGCCAGGAATGATCTACTGTCCTCAATCTTAATAGCATTTGCACTCACTAGGTAAATTCTAAAAATAACTTAATGCGAATTATGCGtcgttaatatgcctgt
+3,gcatcagtaggctgcgtaCGTGTCAAAAACTGCGTATTTACGAAGAGATGGTAGAATGGCGGATGTTAAGATAAGACACGGGGCAGGTTGAATTCCATAAAGTTAGTGGAAtcgttaatatgcctgt
+4,gcatcagtaggctgcgtaTTTCAGATCCTACCATTTGTGTCCTTAAACGGTCAGAACGTACGAGAGTAGTATGGGGGTTAAGTGTAAGCAAGATCTGACTTGGCGCATGTCtcgttaatatgcctgt
+5,gcatcagtaggctgcgtaCCGAGTTCGTATTTTTACAAATCCCGGACTGCATCGTCCTTTCATGTAGCACGGGCCCTGTGTCAGACGCACGATTTCTCCTAGAATTGCTCTtcgttaatatgcctgt
+6,gcatcagtaggctgcgtaTATTTAATGAGTGTGAGGCAAAGTTGTTCGGCTCTAGCAAAAGGACGACAAATGAACTAGCCGGAGAACAGCAGTAGTTAAAAGTTATAAGAAtcgttaatatgcctgt
+7,gcatcagtaggctgcgtaTTTACGCTCAGCAAGCGTAGCTAGCATGCGTCTTAATGATTCACAACTTTCCTTTATGCATGAACATTCTCTGTCGCTTGGGGGGATGTACTCtcgttaatatgcctgt
+8,gcatcagtaggctgcgtaTCAAACAGGTTACGACACAAAGAACGCCAAGTATCTCCGAATCGTACAATCGTGTAGATTTGTTGAGATAGAGTTAACGTAGAGCGCAATTCAtcgttaatatgcctgt
+```
+
+## Configuration file.
+
+To specify the relative filepaths for metadata and sequencing files
+the user creates and specifies a JSON configuration file. 
+The configuration file will specify _one_ sample metadata filepath
+and any number of peptide metadata reference libraries associated by
+library name. Finally, the file must map an _experiment_ name to a relative
+file path we can expect to find the sample fastq files.
+
+```JSON
+{
+    "output_dir" : "simulations/simulate_ones_nr/",
+
+    "samples" : "simulations/simulate_ones_nr/samples/sample_metadata.csv",
+
+    "experiments" : {
+        "expa" : "simulations/simulate_ones_nr/experiments/expa/some/path/"
+    },
+
+    "references" : {
+        "refa" : "simulations/simulate_ones_nr/references/peptide_metadata_a.csv"
+    }
+}
+```
+
 
 
 

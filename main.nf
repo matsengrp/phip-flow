@@ -107,12 +107,6 @@ index_sample_ch = pep_channel_index
             )
         }
     }
-    //.subscribe { 
-        //println "$it"
-        //it.each { arg ->
-        //    println arg.getClass()
-        //}
-    //}
 
 process short_read_alignment {
 

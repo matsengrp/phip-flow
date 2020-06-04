@@ -10,13 +10,11 @@ this pipeline requires
 (1) a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
 (2) a (number of) csv peptide metadata file(s) specifying the oligo sequence 
 for each peptide in the library prepared for Immuno-Precitation (IP).
-
 (3) Finally, the user provides a configuarion file in the form a
 [JSON]() 
 file to specify file paths to metadata and sequencing files
 relative to the working directory of pipeline execution.
-We build the index reference
-and use
+We build the index reference and use
 [Bowtie]() 
 for short read alignment samples to their respective peptide reference library.
 The pipeline then merges all alignemnt hit counts into a coherent counts matrix, _M_. 
@@ -109,19 +107,26 @@ file path we can expect to find the sample fastq files.
 
 ```JSON
 {
-    "output_dir" : "simulations/simulate_ones_nr/",
+    "output_dir" : "simulations/simulate_ones/",
 
-    "samples" : "simulations/simulate_ones_nr/samples/sample_metadata.csv",
+    "samples" : "simulations/simulate_ones/samples/sample_metadata.csv",
 
     "experiments" : {
-        "expa" : "simulations/simulate_ones_nr/experiments/expa/some/path/"
+        "expa" : "simulations/simulate_ones/experiments/expa/some/path/",
+        "expb" : "simulations/simulate_ones/experiments/expb/some/path/"
     },
 
     "references" : {
-        "refa" : "simulations/simulate_ones_nr/references/peptide_metadata_a.csv"
+        "refa" : "simulations/simulate_ones/references/peptide_metadata_a.csv",
+        "refb" : "simulations/simulate_ones/references/peptide_metadata_b.csv"
     }
 }
 ```
+
+Notice that that _experiments_ and _references_ are both collections themselves. 
+This is because the sample metadata is expected to have columns specifying
+the associated _experiment_ ("expa", "expb") and _reference_ ("refa", "refb") 
+for each sample provided. 
 
 
 

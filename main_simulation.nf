@@ -26,7 +26,7 @@ process generate_fasta_reference {
 
     publishDir "$config.output_dir/references/"
     container 'quay.io/matsengrp/phippery'    
-    label 'single_thread_large_mem'
+    label 'single_thread_small_mem'
 
     input:
         set( 
@@ -51,7 +51,7 @@ process generate_index {
  
     publishDir "$config.output_dir/references/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
-    label 'multithread'
+    label 'single_thread_small_mem'
 
     input:
         set( 
@@ -68,7 +68,7 @@ process generate_index {
     shell:    
     """
     mkdir ${ref_name}_index
-    bowtie-build --threads 4  ${pep_fasta} ${ref_name}_index/${ref_name}
+    bowtie-build ${pep_fasta} ${ref_name}_index/${ref_name}
     """
 }
 
@@ -114,7 +114,7 @@ process short_read_alignment {
 
     publishDir "$config.output_dir/alignments/$ref_name/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
-    label 'multithread'
+    label 'single_thread_small_mem'
     //echo true 
 
     input:
@@ -153,7 +153,7 @@ process sam_to_counts {
     
     publishDir "$config.output_dir/alignments/$ref_name"
     container 'quay.io/biocontainers/samtools:1.3--h0592bc0_3'
-    label 'multithread'
+    label 'single_thread_small_mem'
 
     input:
         set(
@@ -173,9 +173,9 @@ process sam_to_counts {
     // TODO, should we rm all intermediary files?
     script:
     """
-    samtools view -u -@ 4 ${sam_file} | \
-    samtools sort -@ 4 - > ${ID}.${replicate_number}.bam
-    samtools sort -@ 4 ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
+    samtools view -u ${sam_file} | \
+    samtools sort - > ${ID}.${replicate_number}.bam
+    samtools sort ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
     mv ${ID}.${replicate_number}.sorted ${ID}.${replicate_number}.bam
     samtools index -b ${ID}.${replicate_number}.bam
     samtools idxstats ${ID}.${replicate_number}.bam | \
@@ -198,7 +198,7 @@ process collect_phip_data {
     
     publishDir "$config.output_dir/phip_data/"
     container 'quay.io/matsengrp/phippery'    
-    label 'single_thread_large_mem'
+    label 'single_thread_small_mem'
 
     input:
         set (

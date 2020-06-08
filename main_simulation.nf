@@ -26,8 +26,7 @@ process generate_fasta_reference {
 
     publishDir "$config.output_dir/references/"
     container 'quay.io/matsengrp/phippery'    
-    label 'single_thread_large_mem'
-    echo true
+    label 'single_thread_small_mem'
 
     input:
         set( 
@@ -43,7 +42,6 @@ process generate_fasta_reference {
 
     shell:    
     """
-    ls ${pep_ref}
     phippery peptide-md-to-fasta -d ${pep_ref} -o ${ref_name}.fasta
     """
 }
@@ -53,7 +51,7 @@ process generate_index {
  
     publishDir "$config.output_dir/references/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
-    label 'multithread'
+    label 'single_thread_small_mem'
 
     input:
         set( 
@@ -70,7 +68,7 @@ process generate_index {
     shell:    
     """
     mkdir ${ref_name}_index
-    bowtie-build --threads 4  ${pep_fasta} ${ref_name}_index/${ref_name}
+    bowtie-build ${pep_fasta} ${ref_name}_index/${ref_name}
     """
 }
 
@@ -86,6 +84,7 @@ Channel
         ) 
     }
     .set { samples_ch }
+
 
 // TODO, this could be cleaned up so .flatMap does all the work,
 // and we can get rid of .map all together.
@@ -115,8 +114,7 @@ process short_read_alignment {
 
     publishDir "$config.output_dir/alignments/$ref_name/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
-    label 'multithread'
-    //stageInMode 'link'
+    label 'single_thread_small_mem'
     //echo true 
 
     input:
@@ -143,24 +141,19 @@ process short_read_alignment {
     // like, aren't the reads going to be longer than the reference library
     // peptides?
     shell:
-    //bowtie -v 2 --tryhard --sam \
-    //real_zip = "readlink ${respective_replicate_path}"
-    //zcat -dcf \$(${real_zip}) |
     """
-    zcat -f ${respective_replicate_path} |
-    bowtie --trim3 8 -n 2 -l 117 --tryhard --nomaqround --norc --best --sam --quiet \
-    ${index}/${ref_name} - \
-    > ${ID}.${replicate_number}.sam
+    bowtie -v 2 --tryhard --sam \
+    ${index}/${ref_name} ${respective_replicate_path} \
+    > ${ID}.${replicate_number}.sam;
     """    
 }
-
 
 // how might we seperate channels and pricesses based upon reference?
 process sam_to_counts {
     
     publishDir "$config.output_dir/alignments/$ref_name"
     container 'quay.io/biocontainers/samtools:1.3--h0592bc0_3'
-    label 'multithread'
+    label 'single_thread_small_mem'
 
     input:
         set(
@@ -180,9 +173,9 @@ process sam_to_counts {
     // TODO, should we rm all intermediary files?
     script:
     """
-    samtools view -u -@ 4 ${sam_file} | \
-    samtools sort -@ 4 - > ${ID}.${replicate_number}.bam
-    samtools sort -@ 4 ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
+    samtools view -u ${sam_file} | \
+    samtools sort - > ${ID}.${replicate_number}.bam
+    samtools sort ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
     mv ${ID}.${replicate_number}.sorted ${ID}.${replicate_number}.bam
     samtools index -b ${ID}.${replicate_number}.bam
     samtools idxstats ${ID}.${replicate_number}.bam | \
@@ -205,7 +198,7 @@ process collect_phip_data {
     
     publishDir "$config.output_dir/phip_data/"
     container 'quay.io/matsengrp/phippery'    
-    label 'single_thread_large_mem'
+    label 'single_thread_small_mem'
 
     input:
         set (
@@ -221,7 +214,7 @@ process collect_phip_data {
     script:
     """
     phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
-    -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
+    -o ${ref_name}.phip ${all_counts_files}
     """ 
 }
 

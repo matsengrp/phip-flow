@@ -27,6 +27,7 @@ process generate_fasta_reference {
     publishDir "$config.output_dir/references/"
     container 'quay.io/matsengrp/phippery'    
     label 'single_thread_large_mem'
+    echo true
 
     input:
         set( 
@@ -42,6 +43,7 @@ process generate_fasta_reference {
 
     shell:    
     """
+    ls ${pep_ref}
     phippery peptide-md-to-fasta -d ${pep_ref} -o ${ref_name}.fasta
     """
 }
@@ -85,7 +87,6 @@ Channel
     }
     .set { samples_ch }
 
-
 // TODO, this could be cleaned up so .flatMap does all the work,
 // and we can get rid of .map all together.
 index_sample_ch = pep_channel_index
@@ -115,6 +116,7 @@ process short_read_alignment {
     publishDir "$config.output_dir/alignments/$ref_name/"
     container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
     label 'multithread'
+    //stageInMode 'link'
     //echo true 
 
     input:
@@ -141,12 +143,17 @@ process short_read_alignment {
     // like, aren't the reads going to be longer than the reference library
     // peptides?
     shell:
+    //bowtie -v 2 --tryhard --sam \
+    //real_zip = "readlink ${respective_replicate_path}"
+    //zcat -dcf \$(${real_zip}) |
     """
-    bowtie -v 2 --tryhard --sam \
-    ${index}/${ref_name} ${respective_replicate_path} \
-    > ${ID}.${replicate_number}.sam;
+    zcat -f ${respective_replicate_path} |
+    bowtie --trim3 8 -n 2 -l 117 --tryhard --nomaqround --norc --best --sam --quiet \
+    ${index}/${ref_name} - \
+    > ${ID}.${replicate_number}.sam
     """    
 }
+
 
 // how might we seperate channels and pricesses based upon reference?
 process sam_to_counts {
@@ -214,7 +221,7 @@ process collect_phip_data {
     script:
     """
     phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
-    -o ${ref_name}.phip ${all_counts_files}
+    -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
     """ 
 }
 

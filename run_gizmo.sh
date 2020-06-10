@@ -1,6 +1,6 @@
 #!/bin/bash
 set -e
-source /app/Lmod/lmod/lmod/init/bash
+source /app/lmod/lmod/init/bash
 # module use /app/easybuild/modules/all
 
 module load nextflow
@@ -11,9 +11,8 @@ nextflow \
     -C "/home/jgallowa/.nextflow/config" \
     run \
     main.nf \
-    --params_file empirical_config/caitlin-phip-cov-config.json \
+    --params_file /fh/fast/overbaugh_j/data-by-category/phip-seq/config/caitlin-phip-cov-config.json \
     -with-report output/nextflow_report.html \
-    # -work-dir /fh/scratch/delete30/matsen_e/jgallowa/temp/work4/ \
-    -work-dir ./work \
+    -work-dir /fh/scratch/delete30/matsen_e/jgallowa/temp/work/ \
     -ansi-log false \
     -resume

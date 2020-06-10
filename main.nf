@@ -221,7 +221,7 @@ process collect_phip_data {
     script:
     """
     phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
-    -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
+    -tech_rep_thresh 0.0 -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
     """ 
 }
 

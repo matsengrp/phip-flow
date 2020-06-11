@@ -21,13 +21,10 @@ ref_tuple_channel = Channel
         }
     )
 
-//TODO all process should _optionally_ publishDir
 process generate_fasta_reference {
 
     publishDir "$config.output_dir/references/"
-    container 'quay.io/matsengrp/phippery'    
     label 'single_thread_large_mem'
-    echo true
 
     input:
         set( 
@@ -43,7 +40,6 @@ process generate_fasta_reference {
 
     shell:    
     """
-    ls ${pep_ref}
     phippery peptide-md-to-fasta -d ${pep_ref} -o ${ref_name}.fasta
     """
 }
@@ -52,7 +48,6 @@ process generate_fasta_reference {
 process generate_index {
  
     publishDir "$config.output_dir/references/"
-    container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'    
     label 'multithread'
 
     input:
@@ -82,7 +77,8 @@ Channel
         tuple(
             row.reference,
             row.ID,
-            new File(config["experiments"][row.experiment], row.fastq_pattern)
+            new File(config["experiments"][row.experiment], row.fastq_pattern),
+            row.experiment
         ) 
     }
     .set { samples_ch }
@@ -96,7 +92,8 @@ index_sample_ch = pep_channel_index
             sample[1],
             ref[0],
             file(ref[1]), // TODO, this is already a file.
-            file(sample[2])
+            file(sample[2]),
+            sample[3] //exp name
         )
     }
     .flatMap{t ->
@@ -106,7 +103,8 @@ index_sample_ch = pep_channel_index
                 replicate_idx,
                 t[1], //ref name
                 t[2], //ref dir
-                replicate_path
+                replicate_path,
+                t[4] // exp name
             )
         }
     }
@@ -114,10 +112,7 @@ index_sample_ch = pep_channel_index
 process short_read_alignment {
 
     publishDir "$config.output_dir/alignments/$ref_name/"
-    container 'quay.io/biocontainers/bowtie:1.2.2--py36h2d50403_1'
     label 'multithread'
-    //stageInMode 'link'
-    //echo true 
 
     input:
         set( 
@@ -125,7 +120,8 @@ process short_read_alignment {
             val(replicate_number),
             val(ref_name), 
             file(index), 
-            file(respective_replicate_path)
+            file(respective_replicate_path),
+            val(experiment_name)
         ) from index_sample_ch 
 
     output:
@@ -136,22 +132,23 @@ process short_read_alignment {
             file("${ID}.${replicate_number}.sam")
         ) into aligned_reads_sam
 
-    // TODO obviously we are going to need different alignment
-    // schemes for phage-dma, phip-seq, simulation testing.
-    // the "v" option is a place holder for simulation testing.
     // TODO should we be doing local alignment?
     // like, aren't the reads going to be longer than the reference library
     // peptides?
+    exec:
+    read_length = config["read_length"]["${experiment_name}"] 
+    tile_length = config["tile_length"]["${ref_name}"]
+    trim = read_length - tile_length
+    num_mm = config["num_mm"]
+
     shell:
-    //bowtie -v 2 --tryhard --sam \
-    //real_zip = "readlink ${respective_replicate_path}"
-    //zcat -dcf \$(${real_zip}) |
-    """
-    zcat -f ${respective_replicate_path} |
-    bowtie --trim3 8 -n 2 -l 117 --tryhard --nomaqround --norc --best --sam --quiet \
-    ${index}/${ref_name} - \
-    > ${ID}.${replicate_number}.sam
-    """    
+        """
+        cat ${respective_replicate_path} |
+        bowtie --trim3 ${trim} -n ${num_mm} -l ${tile_length} \
+        --tryhard --nomaqround --norc --best --sam --quiet \
+        ${index}/${ref_name} - \
+        > ${ID}.${replicate_number}.sam
+        """
 }
 
 
@@ -159,7 +156,6 @@ process short_read_alignment {
 process sam_to_counts {
     
     publishDir "$config.output_dir/alignments/$ref_name"
-    container 'quay.io/biocontainers/samtools:1.3--h0592bc0_3'
     label 'multithread'
 
     input:
@@ -204,7 +200,6 @@ grouped_counts = counts
 process collect_phip_data {
     
     publishDir "$config.output_dir/phip_data/"
-    container 'quay.io/matsengrp/phippery'    
     label 'single_thread_large_mem'
 
     input:
@@ -221,7 +216,7 @@ process collect_phip_data {
     script:
     """
     phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
-    -tech_rep_thresh 0.0 -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
+    -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
     """ 
 }
 

@@ -7,9 +7,10 @@ module load nextflow
 module load Singularity
 export PATH=$SINGULARITYROOT/bin/:$PATH
 
+# -C "/home/jgallowa/.nextflow/config" \
 nextflow \
-    -C "/home/jgallowa/.nextflow/config" \
     run \
+    -c "nextflow.gizmo.config" \
     main.nf \
     --params_file /fh/fast/overbaugh_j/data-by-category/phip-seq/config/caitlin-phip-cov-config.json \
     -with-report output/nextflow_report.html \

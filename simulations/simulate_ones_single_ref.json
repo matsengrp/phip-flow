@@ -1,0 +1,24 @@
+
+{
+    "output_dir" : "simulations/simulate_ones_single_ref/",
+
+    "samples" : "simulations/simulate_ones_single_ref/samples/sample_metadata.csv",
+
+    "experiments" : {
+        "expa" : "simulations/simulate_ones_single_ref/experiments/expa/some/path/"
+    },
+
+    "references" : {
+        "refa" : "simulations/simulate_ones_single_ref/references/peptide_metadata_a.csv"
+    },
+
+    "read_length" : {
+        "expa" : 125
+    },
+
+    "tile_length" : {
+        "refa" : 117
+    },
+
+    "num_mm" : 2
+}

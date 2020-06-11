@@ -20,5 +20,9 @@
         "refa" : 117
     },
 
-    "num_mm" : 2
+    "num_mm" : 1,
+
+    "counts_matrix_prefix" : "simulate_ones_mean_blah_",
+    
+    "tech_rep_agg_func" : "mean"
 }

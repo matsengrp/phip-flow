@@ -196,7 +196,9 @@ grouped_counts = counts
             tsv
         )
     }
-    
+
+//TODO not sure how to fix this but "-resume" skips this even 
+// if the params inside the configuration have changed.    
 process collect_phip_data {
     
     publishDir "$config.output_dir/phip_data/"
@@ -211,12 +213,17 @@ process collect_phip_data {
         ) from grouped_counts 
 
     output:
-        file "${ref_name}.phip" into phip_data_ch
+        file "${prefix}${ref_name}.phip" into phip_data_ch
+
+    exec:
+        prefix = config["counts_matrix_prefix"]
+        tech_rep_agg_func = config["tech_rep_agg_func"]
 
     script:
     """
     phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
-    -tech_rep_agg sum -o ${ref_name}.phip ${all_counts_files}
+    -tech_rep_agg ${tech_rep_agg_func} \
+    -o ${prefix}${ref_name}.phip ${all_counts_files}
     """ 
 }
 

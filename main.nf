@@ -23,7 +23,7 @@ ref_tuple_channel = Channel
 
 process generate_fasta_reference {
 
-    publishDir "$config.output_dir/references/"
+    //publishDir "$config.output_dir/references/"
     label 'single_thread_large_mem'
 
     input:
@@ -47,7 +47,7 @@ process generate_fasta_reference {
 
 process generate_index {
  
-    publishDir "$config.output_dir/references/"
+    //publishDir "$config.output_dir/references/"
     label 'multithread'
 
     input:
@@ -111,7 +111,7 @@ index_sample_ch = pep_channel_index
 
 process short_read_alignment {
 
-    publishDir "$config.output_dir/alignments/$ref_name/"
+    //publishDir "$config.output_dir/alignments/$ref_name/"
     label 'multithread'
 
     input:
@@ -143,7 +143,7 @@ process short_read_alignment {
 
     shell:
         """
-        cat ${respective_replicate_path} |
+        zcat ${respective_replicate_path} |
         bowtie --trim3 ${trim} -n ${num_mm} -l ${tile_length} \
         --tryhard --nomaqround --norc --best --sam --quiet \
         ${index}/${ref_name} - \
@@ -155,7 +155,7 @@ process short_read_alignment {
 // how might we seperate channels and pricesses based upon reference?
 process sam_to_counts {
     
-    publishDir "$config.output_dir/alignments/$ref_name"
+    //publishDir "$config.output_dir/alignments/$ref_name"
     label 'multithread'
 
     input:
@@ -201,7 +201,7 @@ grouped_counts = counts
 // if the params inside the configuration have changed.    
 process collect_phip_data {
     
-    publishDir "$config.output_dir/phip_data/"
+    publishDir "$config.output_dir/phip_data/", mode: 'copy'
     label 'single_thread_large_mem'
 
     input:

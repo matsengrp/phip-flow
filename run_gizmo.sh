@@ -16,4 +16,3 @@ nextflow \
     -with-report output/nextflow_report.html \
     -work-dir /fh/scratch/delete30/matsen_e/jgallowa/temp/work/ \
     -ansi-log false \
-    -resume

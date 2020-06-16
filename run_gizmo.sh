@@ -7,7 +7,6 @@ module load nextflow
 module load Singularity
 export PATH=$SINGULARITYROOT/bin/:$PATH
 
-# -C "/home/jgallowa/.nextflow/config" \
 /usr/bin/time nextflow \
     run \
     -c "nextflow.gizmo.config" \

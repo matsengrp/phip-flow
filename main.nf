@@ -132,18 +132,16 @@ process short_read_alignment {
             file("${ID}.${replicate_number}.sam")
         ) into aligned_reads_sam
 
-    // TODO should we be doing local alignment?
-    // like, aren't the reads going to be longer than the reference library
-    // peptides?
     exec:
     read_length = config["read_length"]["${experiment_name}"] 
     tile_length = config["tile_length"]["${ref_name}"]
     trim = read_length - tile_length
     num_mm = config["num_mm"]
+    stream_func = config["fastq_stream_func"]
 
     shell:
         """
-        zcat ${respective_replicate_path} |
+        ${stream_func} ${respective_replicate_path} |
         bowtie --trim3 ${trim} -n ${num_mm} -l ${tile_length} \
         --tryhard --nomaqround --norc --best --sam --quiet \
         ${index}/${ref_name} - \

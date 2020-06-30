@@ -78,7 +78,6 @@ def generate_reads(
                     filler = ''.join(np.random.choice(nt, n_nt_filler))
                     split = 0 if peptide_on_5_prime else np.random.choice(range(n_nt_filler))
                     oligo = filler[:split] + oligo + filler[split:]
-                    #oligo = oligo + filler
                 qscore = "F" * read_length 
                 sample_fqfp[sID].write(f"@\n{oligo}\n+\n{qscore}\n")
 

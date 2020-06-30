@@ -22,7 +22,9 @@
 
     "num_mm" : 1,
 
-    "counts_matrix_prefix" : "simulate_ones_mean_blah_",
+    "counts_matrix_prefix" : "simulate_ones_single_ref_",
     
-    "tech_rep_agg_func" : "mean"
+    "tech_rep_agg_func" : "mean",
+
+    "fastq_stream_func" : "cat"
 }

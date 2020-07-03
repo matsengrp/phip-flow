@@ -43,7 +43,7 @@ Each sample (row) is defined by:
  2. `fastq_pattern` <str> - the regex string pattern for the basename of
     of the sample fastq filename.
 
- 3. `experiment` <str> - the "name" of the experiment this sample was run with,
+ 3. `seq_dir` <str> - the "name" of the sequencing sir this sample was run with,
     the config file will tie the this name with a relative path to look for 
     the respective sample filename.
 
@@ -54,7 +54,7 @@ these are the _required_ fields, but other metadata you would like for downstrea
 analysis should be tied in here, too. and example might look like:
 
 ```
-ID,fastq_pattern,reference,experiment
+ID,fastq_pattern,reference,seq_dir
 0,sample-*-0,refa,expa
 1,sample-*-1,refa,expa
 2,xeno-AE-122-*-R1.3.3.0,refa,expa
@@ -112,7 +112,7 @@ file path we can expect to find the sample fastq files.
 
     "samples" : "simulations/simulate_ones/samples/sample_metadata.csv",
 
-    "experiments" : {
+    "seq_dir" : {
         "expa" : "simulations/simulate_ones/experiments/expa/some/path/",
         "expb" : "simulations/simulate_ones/experiments/expb/some/path/"
     },

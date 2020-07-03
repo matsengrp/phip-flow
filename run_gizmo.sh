@@ -1,7 +1,9 @@
 #!/bin/bash
+
 set -e
-source /app/lmod/lmod/init/bash
-# module use /app/easybuild/modules/all
+source /app/lmod/lmod/init/profile
+#source /app/lmod/lmod/init/bash
+#module use /app/easybuild/modules/all
 
 module load nextflow
 module load Singularity

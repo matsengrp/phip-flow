@@ -77,8 +77,8 @@ Channel
         tuple(
             row.reference,
             row.ID,
-            new File(config["experiments"][row.experiment], row.fastq_pattern),
-            row.experiment
+            new File(config["seq_dir"][row.seq_dir], row.fastq_pattern),
+            row.seq_dir
         ) 
     }
     .set { samples_ch }
@@ -111,7 +111,7 @@ index_sample_ch = pep_channel_index
 
 process short_read_alignment {
 
-    //publishDir "$config.output_dir/alignments/$ref_name/"
+    publishDir "$config.output_dir/alignments/$ref_name/"
     label 'multithread'
 
     input:

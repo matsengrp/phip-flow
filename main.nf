@@ -135,8 +135,6 @@ process short_read_alignment {
     exec:
     read_length = config["read_length"]["${experiment_name}"] 
     tile_length = config["tile_length"]["${ref_name}"]
-    println " experiment name: ${experiment_name}"
-    println config["tile_length"]["${ref_name}"]
     trim = read_length - tile_length
     num_mm = config["num_mm"]
     stream_func = config["fastq_stream_func"]

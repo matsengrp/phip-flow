@@ -8,7 +8,7 @@ Implimented in
 
 this pipeline requires
 (1) a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
-(2) a (number of) csv peptide metadata file(s) specifying the oligo sequence 
+(2) a (possibly number of) csv peptide metadata file(s) specifying the oligo sequence 
 for each peptide in the library prepared for Immuno-Precitation (IP).
 (3) Finally, the user provides a configuarion file in the form a
 [JSON]() 
@@ -108,8 +108,10 @@ file path we can expect to find the sample fastq files.
 
 ```JSON
 {
+    // The directory where phip data xarray object and alignment (SAM) files will be output
     "output_dir" : "simulations/simulate_ones/",
 
+    // path to the samples
     "samples" : "simulations/simulate_ones/samples/sample_metadata.csv",
 
     "seq_dir" : {
@@ -120,7 +122,23 @@ file path we can expect to find the sample fastq files.
     "references" : {
         "refa" : "simulations/simulate_ones/references/peptide_metadata_a.csv",
         "refb" : "simulations/simulate_ones/references/peptide_metadata_b.csv"
-    }
+    },
+
+    "read_length" : {
+        "seq_dir_1" : 125,
+    },
+
+    "tile_length" : {
+        "cov" : 117
+    },
+
+    "num_mm" : 2,
+
+    "counts_matrix_prefix" : "Example-",
+    
+    "tech_rep_agg_func" : "mean",
+
+    "fastq_stream_func" : "zcat"
 }
 ```
 
@@ -129,33 +147,98 @@ This is because the sample metadata is expected to have columns specifying
 the associated _experiment_ ("expa", "expb") and _reference_ ("refa", "refb") 
 for each sample provided. 
 
-## Testing pipeline with simulation
+# Example running on gizmo
 
-To test the pipeline and hueristics within the pipeline, it is helpful
-to simulate some sequencing files and metadata for which we 
-know the expected result (counts table) from the pipeline, given this data.
-The file `simulations/phip_simulator_utils.py` provides some useful
-functions to simulate a dataset. The user then writes a script 
-using these utilities to define reads for
-any sample/peptide combination by supplying a matrix of counts for each
-n-mismatch profile.
-
-To sun the simulation, you simply need `python3`, `numpy`, and `pandas`.
-A conda environment can be created for this using the `environment.yaml`
-file in the simulations directory, like so:
+To run on gizmo, I like to start by creating a directory for the inputs, config files
+and where the outputs will be stored. For example such a directory might look like this:
 
 ```
-cd simulations && conda env create -f environment.yaml
-conda activate phip-simulation
+(base) ➜  pipeline-run-07-17-20 (master) tree
+.
+├── config.json             # the config file for nextflow to find inputs
+├── nextflow.gizmo.config   # the cluster config file specifying partitions, containers etc.
+├── peptide_metadata.csv    # peptide metadata for the run
+├── run_gizmo.sh            # a shell script with the nextflow run command
+└── sample_metadata.csv     # sample metadata for the run
+
+0 directories, 5 files 
 ```
 
-Then, create a custom script and config file using the phip_simulation_utils
-provided. Some examples of these can be found in the simulations directory.
+With this directory, the `config.json` file might look something like:
+
+```json
+{
+    "output_dir" : "./",
+
+    "samples" : "sample_metadata.csv",
+
+    "seq_dir" : {
+        "seq_dir_1" : "/path/to/seq_dir/",
+    },
+
+    "references" : {
+        "cov" : "peptide_metadata.csv"
+    },
+
+    "read_length" : {
+        "seq_dir_1" : 125,
+    },
+
+    "tile_length" : {
+        "cov" : 117
+    },
+
+    "num_mm" : 2,
+
+    "counts_matrix_prefix" : "07-17-20-",
+    
+    "tech_rep_agg_func" : "mean",
+
+    "fastq_stream_func" : "zcat"
+}
+```
+
+The shell script for running nextflow might look something like this:
+```
+#!/bin/bash
+
+set -e
+source /app/lmod/lmod/init/profile
+
+module load nextflow
+module load Singularity
+export PATH=$SINGULARITYROOT/bin/:$PATH
+
+/usr/bin/time nextflow \
+    run \
+    ../../phip-flow/phip-flow/main.nf \     # path to where you cloned this repo containing the main.nf script.
+    -c nextflow.gizmo.config \
+    --params_file config.json \
+    -with-report output/nextflow_report.html \
+    -work-dir /fh/scratch/delete30/some/temp/path/to/store/outputs/ \ # the path where all intermediate files are stored
+    -ansi-log false \
+```
 
 
+Next, on rhino, request an interactive node where you will run the pipeline.
 
+```
+(base) ➜  pipeline-run-07-17-20 (master) kinit
+Password for jgallowa@FHCRC.ORG: <insert password>
+(base) ➜  pipeline-run-07-17-20 (master) grabnode
+How many CPUs/cores would you like to grab on the node? [1-36] 12
+How much memory (GB) would you like to grab? [240] 16
+Please enter the max number of days you would like to grab this node: [1-7] 1
+Do you need a GPU ? [y/N]N
+```
 
+Once allocated, navigate to the directory where you put the above files and simply
 
+```
+./run_gizmo.sh
+```
+
+I reccomend doing this in a `tmux` shell incase your connection to the server breaks before the job finishes.
 
 
 

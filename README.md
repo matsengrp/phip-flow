@@ -1,23 +1,23 @@
-# phippery-experiments
+# phip-flow
 
 This repo contains the code for the 
 [PhIP-Seq](https://www.nature.com/articles/s41596-018-0025-6), 
 analysis pipeline.
-Implimented in 
+Implemented in 
 [Nextflow](https://www.nextflow.io/docs/latest/channel.html).
 
 this pipeline requires
 (1) a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
 (2) a (possibly number of) csv peptide metadata file(s) specifying the oligo sequence 
-for each peptide in the library prepared for Immuno-Precitation (IP).
-(3) Finally, the user provides a configuarion file in the form a
+for each peptide in the library prepared for Immuno-Precipitation (IP).
+(3) Finally, the user provides a configuration file in the form a
 [JSON]() 
 file to specify file paths to metadata and sequencing files
 relative to the working directory of pipeline execution.
 We build the index reference and use
 [Bowtie]() 
 for short read alignment samples to their respective peptide reference library.
-The pipeline then merges all alignemnt hit counts into a coherent counts matrix, _M_. 
+The pipeline then merges all alignment hit counts into a coherent counts matrix, _M_. 
 Concretely, If sample $j$ contains N aligned hits with peptide $i$, then
 
 _M_[i][j] = _N_
@@ -108,10 +108,8 @@ file path we can expect to find the sample fastq files.
 
 ```JSON
 {
-    // The directory where phip data xarray object and alignment (SAM) files will be output
     "output_dir" : "simulations/simulate_ones/",
 
-    // path to the samples
     "samples" : "simulations/simulate_ones/samples/sample_metadata.csv",
 
     "seq_dir" : {

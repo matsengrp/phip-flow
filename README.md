@@ -1,16 +1,17 @@
 # phip-flow
 
-This repo contains the code for the 
-[PhIP-Seq](https://www.nature.com/articles/s41596-018-0025-6), 
+This repo contains the code for our 
+[PhIP-Seq](https://www.nature.com/articles/s41596-018-0025-6) 
 analysis pipeline.
 Implemented in 
 [Nextflow](https://www.nextflow.io/docs/latest/channel.html).
 
 this pipeline requires
-(1) a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
-(2) a (possibly number of) csv peptide metadata file(s) specifying the oligo sequence 
+
+1. a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
+2. a (possibly number of) csv peptide metadata file(s) specifying the oligo sequence 
 for each peptide in the library prepared for Immuno-Precipitation (IP).
-(3) Finally, the user provides a configuration file in the form a
+3. Finally, the user provides a configuration file in the form a
 [JSON]() 
 file to specify file paths to metadata and sequencing files
 relative to the working directory of pipeline execution.
@@ -18,11 +19,9 @@ We build the index reference and use
 [Bowtie]() 
 for short read alignment samples to their respective peptide reference library.
 The pipeline then merges all alignment hit counts into a coherent counts matrix, _M_. 
-Concretely, If sample $j$ contains N aligned hits with peptide $i$, then
+Concretely, If sample j contains N aligned hits with peptide i, then _M_[i][j] = _N_.
 
-_M_[i][j] = _N_
-
-This matrix and associated metadata on both axis
+This matrix and associated metadata on both axes
 can then be used for various statistical queries
 or dumped to csv for third-party analysis. 
 
@@ -73,7 +72,7 @@ ID,fastq_pattern,reference,seq_dir
 Another simple csv containing some metadata for each peptide.
 Each peptide (row) is defined by:
 
- 1. `ID` <int> - A unique identifier to forever tie this peptide to it's
+ 1. `ID` <int> - A unique identifier to forever tie this peptide to its
     counts for each peptide and metadata for downstream analysis.
 
  2. `Oligo` <str> - the oligo nucleotide sequence defining the expressed
@@ -98,7 +97,7 @@ ID,Oligo
 8,gcatcagtaggctgcgtaTCAAACAGGTTACGACACAAAGAACGCCAAGTATCTCCGAATCGTACAATCGTGTAGATTTGTTGAGATAGAGTTAACGTAGAGCGCAATTCAtcgttaatatgcctgt
 ```
 
-## Configuration file.
+## Configuration file
 
 To specify the relative filepaths for metadata and sequencing files
 the user creates and specifies a JSON configuration file. 

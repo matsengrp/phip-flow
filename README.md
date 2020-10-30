@@ -26,11 +26,12 @@ This matrix and associated metadata on both axis
 can then be used for various statistical queries
 or dumped to csv for third-party analysis. 
 
-It's important to note that each sample is associated with a peptide library
-for which the IP experiment was run. The respective library for each sample 
-in the sample metadata file is defined by a single peptide 
-should
-
+Each sample is associated with a peptide library
+for which the IP experiment was run. The respective library for each sample
+in the sample metadata file is defined by a single reference.
+You can mix as many samples and references as you'd like in a single sample
+metadata table, but note that the pipeline will create an enrichment
+dataset for each reference, each containing only the relevent samples.
 
 ## Sample Metadata
 

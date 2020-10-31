@@ -6,7 +6,7 @@ analysis pipeline.
 Implemented in 
 [Nextflow](https://www.nextflow.io/docs/latest/channel.html).
 
-this pipeline requires
+This pipeline requires
 
 1. a csv sample metadata file specifying demultiplexed NGS fastq files for each sample,
 2. a (possibly number of) csv peptide metadata file(s) specifying the oligo sequence 
@@ -50,8 +50,8 @@ Each sample (row) is defined by:
  4. `reference` <str> - the "name" of the reference library this sample should
     be aligned against. 
 
-these are the _required_ fields, but other metadata you would like for downstream
-analysis should be tied in here, too. and example might look like:
+These are the _required_ fields, but other metadata you would like for downstream
+analysis should be tied in here, too. An example might look like:
 
 ```
 ID,fastq_pattern,reference,seq_dir
@@ -81,8 +81,7 @@ Each peptide (row) is defined by:
     the oligo, every lowercase charictar will be considered an adapter sequence,
     and left out of the Index each sample is aligned against.
 
-these are the _required_ fields, but other metadata you would like for downstream
-analysis should be tied in here, too. and example might look like:
+These are the _required_ fields, but other metadata you would like for downstream                                                                                                                                                            analysis should be tied in here, too. An example might look like:
 
 ```
 ID,Oligo
@@ -140,14 +139,14 @@ file path we can expect to find the sample fastq files.
 }
 ```
 
-Notice that that _experiments_ and _references_ are both collections themselves. 
+Notice that _experiments_ and _references_ are both collections themselves. 
 This is because the sample metadata is expected to have columns specifying
 the associated _experiment_ ("expa", "expb") and _reference_ ("refa", "refb") 
 for each sample provided. 
 
 # Example running on gizmo
 
-To run on gizmo, I like to start by creating a directory for the inputs, config files
+To run on our local Fred Hutch cluster, `gizmo`, I like to start by creating a directory for the inputs, config files
 and where the outputs will be stored. For example such a directory might look like this:
 
 ```
@@ -218,7 +217,7 @@ export PATH=$SINGULARITYROOT/bin/:$PATH
 ```
 
 
-Next, on rhino, request an interactive node where you will run the pipeline.
+Next, on a `rhino` computing node, request an interactive node where you will run the pipeline.
 
 ```
 (base) ➜  pipeline-run-07-17-20 (master) kinit

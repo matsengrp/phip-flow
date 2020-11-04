@@ -23,7 +23,6 @@ ref_tuple_channel = Channel
 
 process generate_fasta_reference {
 
-    //publishDir "$config.output_dir/references/"
     label 'single_thread_large_mem'
 
     input:
@@ -77,7 +76,8 @@ Channel
         tuple(
             row.reference,
             row.ID,
-            new File(config["seq_dir"][row.seq_dir], row.fastq_pattern),
+            //new File(config["seq_dir"][row.seq_dir], row.fastq_pattern),
+            new File("${baseDir}/NGS/${row.seq_dir}", row.fastq_pattern)
             row.seq_dir
         ) 
     }

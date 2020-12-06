@@ -77,7 +77,7 @@ Channel
             row.reference,
             row.ID,
             //new File(config["seq_dir"][row.seq_dir], row.fastq_pattern),
-            new File("${baseDir}/NGS/${row.seq_dir}", row.fastq_pattern)
+            new File("${baseDir}/NGS/${row.seq_dir}/${row.fastq_pattern}")
             row.seq_dir
         ) 
     }
@@ -96,18 +96,18 @@ index_sample_ch = pep_channel_index
             sample[3] //exp name
         )
     }
-    .flatMap{t ->
-        t[3].withIndex().collect{ replicate_path, replicate_idx ->
-            tuple(
-                t[0], //id
-                replicate_idx,
-                t[1], //ref name
-                t[2], //ref dir
-                replicate_path,
-                t[4] // exp name
-            )
-        }
-    }
+//    .flatMap{t ->
+//        t[3].withIndex().collect{ replicate_path, replicate_idx ->
+//            tuple(
+//                t[0], //id
+//                replicate_idx,
+//                t[1], //ref name
+//                t[2], //ref dir
+//                replicate_path,
+//                t[4] // exp name
+//            )
+//        }
+//    }
 
 process short_read_alignment {
 
@@ -117,7 +117,7 @@ process short_read_alignment {
     input:
         set( 
             val(ID), 
-            val(replicate_number),
+//            val(replicate_number),
             val(ref_name), 
             file(index), 
             file(respective_replicate_path),

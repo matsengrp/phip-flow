@@ -75,13 +75,15 @@ Channel
     .map{ row -> 
         tuple(
             row.reference,
-            row.ID,
+            row.sample_id,
             //new File(config["seq_dir"][row.seq_dir], row.fastq_pattern),
-            new File("${baseDir}/NGS/${row.seq_dir}/${row.fastq_pattern}")
+            new File("${params.output}/NGS/${row.seq_dir}/${row.fastq_filename}"),
             row.seq_dir
         ) 
     }
     .set { samples_ch }
+
+//samples_ch.subscribe{println it}
 
 // TODO, this could be cleaned up so .flatMap does all the work,
 // and we can get rid of .map all together.
@@ -96,6 +98,9 @@ index_sample_ch = pep_channel_index
             sample[3] //exp name
         )
     }
+
+//index_sample_ch.subscribe{println it}
+
 //    .flatMap{t ->
 //        t[3].withIndex().collect{ replicate_path, replicate_idx ->
 //            tuple(
@@ -111,13 +116,13 @@ index_sample_ch = pep_channel_index
 
 process short_read_alignment {
 
-    publishDir "$config.output_dir/alignments/$ref_name/"
+    publishDir "$params.output/alignments/$ref_name/"
     label 'multithread'
 
     input:
         set( 
             val(ID), 
-//            val(replicate_number),
+            //val(replicate_number),
             val(ref_name), 
             file(index), 
             file(respective_replicate_path),
@@ -127,9 +132,9 @@ process short_read_alignment {
     output:
         set(
             val(ID),
-            val(replicate_number),
+            //val(replicate_number),
             val(ref_name),
-            file("${ID}.${replicate_number}.sam")
+            file("${ID}.sam")
         ) into aligned_reads_sam
 
     exec:
@@ -145,7 +150,7 @@ process short_read_alignment {
         bowtie --trim3 ${trim} -n ${num_mm} -l ${tile_length} \
         --tryhard --nomaqround --norc --best --sam --quiet \
         ${index}/${ref_name} - \
-        > ${ID}.${replicate_number}.sam
+        > ${ID}.sam
         """
 }
 
@@ -153,13 +158,13 @@ process short_read_alignment {
 // how might we seperate channels and pricesses based upon reference?
 process sam_to_counts {
     
-    //publishDir "$config.output_dir/alignments/$ref_name"
+    publishDir "$params.output/counts/$ref_name"
     label 'multithread'
 
     input:
         set(
             val(ID),
-            val(replicate_number),
+            //val(replicate_number),
             val(ref_name),
             file(sam_file)
         ) from aligned_reads_sam
@@ -167,7 +172,7 @@ process sam_to_counts {
     output:
         set(
             val(ref_name),
-            file("${ID}.${replicate_number}.tsv")
+            file("${ID}.tsv")
         ) into counts
 
     // TODO, is the second 'sort' necessary?
@@ -175,12 +180,12 @@ process sam_to_counts {
     script:
     """
     samtools view -u -@ 4 ${sam_file} | \
-    samtools sort -@ 4 - > ${ID}.${replicate_number}.bam
-    samtools sort -@ 4 ${ID}.${replicate_number}.bam -o ${ID}.${replicate_number}.sorted 
-    mv ${ID}.${replicate_number}.sorted ${ID}.${replicate_number}.bam
-    samtools index -b ${ID}.${replicate_number}.bam
-    samtools idxstats ${ID}.${replicate_number}.bam | \
-    cut -f 1,3 | sed "/^*/d" > ${ID}.${replicate_number}.tsv
+    samtools sort -@ 4 - > ${ID}.bam
+    samtools sort -@ 4 ${ID}.bam -o ${ID}.sorted 
+    mv ${ID}.sorted ${ID}.bam
+    samtools index -b ${ID}.bam
+    samtools idxstats ${ID}.bam | \
+    cut -f 1,3 | sed "/^*/d" > ${ID}.tsv
     """
 }
 
@@ -195,11 +200,13 @@ grouped_counts = counts
         )
     }
 
+//grouped_counts.subscribe{println it}
+
 //TODO not sure how to fix this but "-resume" skips this even 
 // if the params inside the configuration have changed.    
 process collect_phip_data {
     
-    publishDir "$config.output_dir/phip_data/", mode: 'copy'
+    publishDir "$params.output/phip_data/", mode: 'copy'
     label 'single_thread_large_mem'
 
     input:
@@ -220,7 +227,6 @@ process collect_phip_data {
     script:
     """
     phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
-    -tech_rep_agg ${tech_rep_agg_func} \
     -o ${prefix}${ref_name}.phip ${all_counts_files}
     """ 
 }

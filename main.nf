@@ -76,17 +76,12 @@ Channel
         tuple(
             row.reference,
             row.sample_id,
-            //new File(config["seq_dir"][row.seq_dir], row.fastq_pattern),
             new File("${params.output}/NGS/${row.seq_dir}/${row.fastq_filename}"),
             row.seq_dir
         ) 
     }
     .set { samples_ch }
 
-//samples_ch.subscribe{println it}
-
-// TODO, this could be cleaned up so .flatMap does all the work,
-// and we can get rid of .map all together.
 index_sample_ch = pep_channel_index
     .cross(samples_ch)
     .map{ ref, sample ->
@@ -99,20 +94,6 @@ index_sample_ch = pep_channel_index
         )
     }
 
-//index_sample_ch.subscribe{println it}
-
-//    .flatMap{t ->
-//        t[3].withIndex().collect{ replicate_path, replicate_idx ->
-//            tuple(
-//                t[0], //id
-//                replicate_idx,
-//                t[1], //ref name
-//                t[2], //ref dir
-//                replicate_path,
-//                t[4] // exp name
-//            )
-//        }
-//    }
 
 process short_read_alignment {
 
@@ -122,7 +103,6 @@ process short_read_alignment {
     input:
         set( 
             val(ID), 
-            //val(replicate_number),
             val(ref_name), 
             file(index), 
             file(respective_replicate_path),
@@ -132,7 +112,6 @@ process short_read_alignment {
     output:
         set(
             val(ID),
-            //val(replicate_number),
             val(ref_name),
             file("${ID}.sam")
         ) into aligned_reads_sam
@@ -154,8 +133,36 @@ process short_read_alignment {
         """
 }
 
+aligned_reads_sam.into{aligned_reads_for_counts; aligned_reads_for_stats}
 
-// how might we seperate channels and pricesses based upon reference?
+process sam_to_stats {
+
+    publishDir "$params.output/stats/$ref_name"
+    label 'multithread'
+
+    input:
+        set(
+            val(ID),
+            val(ref_name),
+            file(sam_file)
+        ) from aligned_reads_for_stats
+    
+    output:
+        set(
+            val(ID),
+            val(ref_name),
+            file("${ID}.txt")
+        ) into alignment_stats 
+    
+    shell:
+        """
+        samtools stats 0.0.sam | grep ^SN | cut -f 2- | 
+        cut -f 2 -d\$'\t' | sed '1p;7p;24p;31p;d' > ${ID}.txt
+        """ 
+
+}
+
+
 process sam_to_counts {
     
     publishDir "$params.output/counts/$ref_name"
@@ -164,10 +171,9 @@ process sam_to_counts {
     input:
         set(
             val(ID),
-            //val(replicate_number),
             val(ref_name),
             file(sam_file)
-        ) from aligned_reads_sam
+        ) from aligned_reads_for_counts
 
     output:
         set(
@@ -175,18 +181,16 @@ process sam_to_counts {
             file("${ID}.tsv")
         ) into counts
 
-    // TODO, is the second 'sort' necessary?
-    // TODO, should we rm all intermediary files?
     script:
-    """
-    samtools view -u -@ 4 ${sam_file} | \
-    samtools sort -@ 4 - > ${ID}.bam
-    samtools sort -@ 4 ${ID}.bam -o ${ID}.sorted 
-    mv ${ID}.sorted ${ID}.bam
-    samtools index -b ${ID}.bam
-    samtools idxstats ${ID}.bam | \
-    cut -f 1,3 | sed "/^*/d" > ${ID}.tsv
-    """
+        """
+        samtools view -u -@ 4 ${sam_file} | \
+        samtools sort -@ 4 - > ${ID}.bam
+        samtools sort -@ 4 ${ID}.bam -o ${ID}.sorted 
+        mv ${ID}.sorted ${ID}.bam
+        samtools index -b ${ID}.bam
+        samtools idxstats ${ID}.bam | \
+        cut -f 1,3 | sed "/^*/d" > ${ID}.tsv
+        """
 }
 
 grouped_counts = counts

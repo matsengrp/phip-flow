@@ -46,7 +46,6 @@ process generate_fasta_reference {
 
 process generate_index {
  
-    //publishDir "$config.output_dir/references/"
     label 'multithread'
 
     input:
@@ -97,7 +96,6 @@ index_sample_ch = pep_channel_index
 
 process short_read_alignment {
 
-    publishDir "$params.output/alignments/$ref_name/"
     label 'multithread'
 
     input:
@@ -156,7 +154,7 @@ process sam_to_stats {
     
     shell:
         """
-        samtools stats 0.0.sam | grep ^SN | cut -f 2- | 
+        samtools stats ${sam_file} | grep ^SN | cut -f 2- | 
         cut -f 2 -d\$'\t' | sed '1p;7p;24p;31p;d' > ${ID}.txt
         """ 
 
@@ -165,7 +163,6 @@ process sam_to_stats {
 
 process sam_to_counts {
     
-    publishDir "$params.output/counts/$ref_name"
     label 'multithread'
 
     input:

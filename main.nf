@@ -155,8 +155,9 @@ process sam_to_stats {
     shell:
         """
         samtools stats ${sam_file} | grep ^SN | cut -f 2- | 
-        cut -f 2 -d\$'\t' | sed '1p;7p;24p;31p;d' > ${ID}.txt
+        sed '1p;7p;24p;31p;d' > ${ID}.txt
         """ 
+        //cut -f 2 -d\$'\t' | sed '1p;7p;24p;31p;d' > ${ID}.txt
 
 }
 

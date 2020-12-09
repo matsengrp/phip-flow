@@ -97,6 +97,7 @@ index_sample_ch = pep_channel_index
 process short_read_alignment {
 
     label 'multithread'
+    //publishDir "$params.output/alignments/$ref_name", mode: "copy"
 
     input:
         set( 
@@ -155,9 +156,10 @@ process sam_to_stats {
     shell:
         """
         samtools stats ${sam_file} | grep ^SN | cut -f 2- | 
-        sed '1p;7p;24p;31p;d' > ${ID}.txt
+        sed '1p;7p;22p;25p;d' > ${ID}.txt
         """ 
         //cut -f 2 -d\$'\t' | sed '1p;7p;24p;31p;d' > ${ID}.txt
+        //sed '1p;7p;24p;31p;d' > ${ID}.txt
 
 }
 
@@ -233,4 +235,4 @@ process collect_phip_data {
     """ 
 }
 
-phip_data_ch.subscribe{println it}
+//phip_data_ch.subscribe{println it}

@@ -63,15 +63,16 @@ process generate_index {
         ) into pep_channel_index
 
     shell:    
-    //"""
+    """
+    mkdir ${ref_name}_index
+    bowtie2-build --threads 4 \
+     ${pep_fasta} ${ref_name}_index/${ref_name}
+    """
     //bowtie2-build --threads 4  ${pep_fasta} ${ref_name}_index
     //"""
     //mkdir ${ref_name}_index
-    //bowtie2-build --threads 4  ${pep_fasta} ${ref_name}_index/${ref_name}
-    """
-    mkdir ${ref_name}_index
-    bowtie-build --threads 4  ${pep_fasta} ${ref_name}_index/${ref_name}
-    """
+    //bowtie-build --threads 4  ${pep_fasta} ${ref_name}_index/${ref_name}
+    //"""
 }
 
 
@@ -129,22 +130,21 @@ process short_read_alignment {
     trim = Math.max(0, trim)
     num_mm = config["num_mm"]
     stream_func = config["fastq_stream_func"]
-    println trim
 
     shell:
-//        """
-//        ${stream_func} ${respective_replicate_path} |
-//        bowtie2 -x ${index}/${ref_name} - \
-//        > ${ID}.sam
-//        """
-        //bowtie -a -n ${num_mm} -l ${tile_length} \
         """
         ${stream_func} ${respective_replicate_path} |
-        bowtie --trim3 ${trim} -n ${num_mm} -l ${tile_length} \
-        --tryhard --nomaqround --norc --best --sam --quiet \
-        ${index}/${ref_name} - \
-        > ${ID}.sam
+        bowtie2 -a -N ${num_mm} -x ${index}/${ref_name} --trim3 ${trim} \
+        --local - > ${ID}.sam
         """
+        //bowtie -a -n ${num_mm} -l ${tile_length} \
+        //"""
+        //${stream_func} ${respective_replicate_path} |
+        //bowtie --trim3 ${trim} -n ${num_mm} -l ${tile_length} \
+        //--tryhard --nomaqround --norc --best --sam --quiet \
+        //${index}/${ref_name} - \
+        //> ${ID}.sam
+        //"""
 }
 
 aligned_reads_sam.into{aligned_reads_for_counts; aligned_reads_for_stats}
@@ -197,7 +197,7 @@ process sam_to_counts {
 
     script:
         //"""
-        //samtools sort -O BAM ${sam_file} -o ${sam_file}.bam
+        //samtools sort -O BAM -o ${sam_file}.bam ${sam_file}
         //samtools idxstats ${sam_file}.bam | \
         //cut -f 1,3 | sed "/^*/d" > ${ID}.tsv
         //"""

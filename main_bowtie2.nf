@@ -134,8 +134,7 @@ process short_read_alignment {
     shell:
         """
         ${stream_func} ${respective_replicate_path} |
-        bowtie2 -a -N ${num_mm} -x ${index}/${ref_name} --trim3 ${trim} \
-        --local - > ${ID}.sam
+        bowtie2 -N ${num_mm} -x ${index}/${ref_name} --trim3 ${trim} --local - > ${ID}.sam
         """
         //bowtie -a -n ${num_mm} -l ${tile_length} \
         //"""
@@ -164,7 +163,7 @@ process sam_to_stats {
     
     output:
         set(
-            val(ID),
+            //val(ID),
             val(ref_name),
             file("${ID}.txt")
         ) into alignment_stats 
@@ -253,5 +252,59 @@ process collect_phip_data {
     -o ${prefix}${ref_name}.phip ${all_counts_files}
     """ 
 }
+
+
+//phip_data_ch.subscribe{println it}
+grouped_stats = alignment_stats
+    .groupTuple()
+    .map{ ref_name, tsv ->
+        tuple(
+            ref_name,
+            file(config["references"][ref_name]),
+            file(config["samples"]),
+            tsv
+        )
+    }
+
+
+grouped_stats.subscribe{println it}
+
+
+//process merge_stats {
+//
+//    publishDir "$params.output/phip_data/", mode: 'copy'
+//
+//    input:
+//        set (
+//            val(ref_name),
+//            file(pep_meta),
+//            file(sam_meta),
+//            file(all_counts_files)    
+//        ) from grouped_counts 
+//
+//    output:
+//        file "${prefix}${ref_name}.phip" into phip_data_ch
+//
+//    exec:
+//        prefix = config["counts_matrix_prefix"]
+//        tech_rep_agg_func = config["tech_rep_agg_func"]
+//
+//    script:
+//    """
+//    phippery collect-phip-data -s_meta ${sam_meta} -p_meta ${pep_meta} \
+//    -o ${prefix}${ref_name}.phip ${all_counts_files}
+//    """
+//}
+
+
+
+
+
+
+
+
+
+
+
 
 //phip_data_ch.subscribe{println it}

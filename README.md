@@ -5,5 +5,5 @@ An alignment pipeline to produce an organized and coherent phip seq data, which 
 
 The pipeline Directed Acyclic Graph is visualized below
 <p>
-  <img src="dag.png" width="250">
+  <img src="dag.png" width="375">
 </p>

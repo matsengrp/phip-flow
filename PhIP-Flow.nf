@@ -92,10 +92,18 @@ process short_read_alignment {
         ) into aligned_reads_sam
 
     shell:
-        """
-        ${params.fastq_stream_func} ${respective_replicate_path} | \
-        bowtie2 ${params.bowtie2_args} -x ${index}/peptide - > ${sample_id}.sam
-        """
+
+        if ("$params.alignment_tool" == "bowtie")
+            """
+            ${params.fastq_stream_func} ${respective_replicate_path} | \
+            bowtie ${params.align_args} -x ${index}/peptide - > ${sample_id}.sam
+            """
+
+        else if ("$params.alignment_tool" == "bowtie2")
+            """
+            ${params.fastq_stream_func} ${respective_replicate_path} | \
+            bowtie2 ${params.align_args} -x ${index}/peptide - > ${sample_id}.sam
+            """
 }
 
 
@@ -143,9 +151,9 @@ process sam_to_counts {
 
     script:
         """
-        samtools view -u -@ 4 ${sam_file} | \
-        samtools sort -@ 4 - > ${sample_id}.bam
-        samtools sort -@ 4 ${sample_id}.bam -o ${sample_id}.sorted 
+        samtools view -u -@ 28 ${sam_file} | \
+        samtools sort -@ 28 - > ${sample_id}.bam
+        samtools sort -@ 28 ${sample_id}.bam -o ${sample_id}.sorted 
         mv ${sample_id}.sorted ${sample_id}.bam
         samtools index -b ${sample_id}.bam
         samtools idxstats ${sample_id}.bam | \

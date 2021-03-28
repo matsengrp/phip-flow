@@ -3,7 +3,7 @@
 An alignment pipeline to produce an organized and coherent phip seq data, which can subsequently be used by the [phippery](https://github.com/matsengrp/phippery) Python package for query, analysis, and more
 
 The pipeline Directed Acyclic Graph is visualized below
-<p>
+<p align="center">
   <img src="dag.png" width="375">
 </p>
 

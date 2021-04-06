@@ -11,7 +11,7 @@ peptide_reference_ch = Channel.fromPath("${params.peptide_table}")
 process generate_fasta_reference {
 
     label 'single_thread_large_mem'
-    publishDir "${params.phip_data_dir}/"
+    //publishDir "${params.phip_data_dir}/"
 
     input: file "pep_ref" from peptide_reference_ch
 
@@ -27,7 +27,7 @@ process generate_fasta_reference {
 // GENERATE INDEX
 process generate_index {
  
-    publishDir "${params.phip_data_dir}/reference"
+    //publishDir "${params.phip_data_dir}/reference"
     label 'multithread'
 
     input:
@@ -40,11 +40,20 @@ process generate_index {
         ) into pep_channel_index
 
     shell:    
-        """
-        mkdir peptide_index
-        bowtie2-build --threads 4 \
-        ${pep_fasta} peptide_index/peptide
-        """
+
+        if ("$params.alignment_tool" == "bowtie")
+            """
+            mkdir peptide_index
+            bowtie-build --threads 4 \
+            ${pep_fasta} peptide_index/peptide
+            """
+
+        else if ("$params.alignment_tool" == "bowtie2")
+            """
+            mkdir peptide_index
+            bowtie2-build --threads 4 \
+            ${pep_fasta} peptide_index/peptide
+            """
 }
 
 
@@ -75,7 +84,7 @@ index_sample_ch = pep_channel_index
 // ALIGN ALL SAMPLES TO THE REFERENCE
 process short_read_alignment {
 
-    publishDir "${params.phip_data_dir}/alignments"
+    //publishDir "${params.phip_data_dir}/alignments"
     label 'multithread'
 
     input:
@@ -114,7 +123,7 @@ aligned_reads_sam.into{aligned_reads_for_counts; aligned_reads_for_stats}
 // COMPUTE ALIGNMENT STATS FOR ALL STATS
 process sam_to_stats {
 
-    publishDir "${params.phip_data_dir}/stats"
+    //publishDir "${params.phip_data_dir}/stats"
     label 'multithread'
 
     input:
@@ -137,7 +146,7 @@ process sam_to_stats {
 // COMPUTE COUNTS FOR ALL SAMPLES
 process sam_to_counts {
     
-    publishDir "${params.phip_data_dir}/counts/"
+    //publishDir "${params.phip_data_dir}/counts/"
     label 'multithread'
 
     input:

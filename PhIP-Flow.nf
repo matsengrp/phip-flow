@@ -105,7 +105,7 @@ process short_read_alignment {
         if ("$params.alignment_tool" == "bowtie")
             """
             ${params.fastq_stream_func} ${respective_replicate_path} | \
-            bowtie ${params.align_args} -x ${index}/peptide - > ${sample_id}.sam
+            bowtie ${params.align_args} --sam -x ${index}/peptide - > ${sample_id}.sam
             """
 
         else if ("$params.alignment_tool" == "bowtie2")

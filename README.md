@@ -1,6 +1,6 @@
 # PhIP-Flow
 
-An alignment pipeline to produce an organized and coherent phip seq data, which can subsequently be used by the [phippery](https://github.com/matsengrp/phippery) Python package for query, analysis, and more
+A general PhIP-Seq short read alignment pipeline to produce a dataset conatining the raw alignment counts for each sample merged into an xarray [DataSet](). This dataset organization can subsequently be easily analyzed by using the the [phippery](https://github.com/matsengrp/phippery) Python package.
 
 The pipeline Directed Acyclic Graph is visualized below
 <p align="center">

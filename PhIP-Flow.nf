@@ -189,8 +189,8 @@ process collect_phip_data {
     script:
         """
         phippery collect-phip-data \
-        -s_meta ${sample_table} \
-        -p_meta ${peptide_table} \
+        --sample_table ${sample_table} \
+        --peptide_table ${peptide_table} \
         -c '*.counts' \
         -s '*.stats' \
         -o ${params.dataset_prefix}.phip

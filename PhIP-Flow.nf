@@ -188,7 +188,7 @@ process collect_phip_data {
 
     script:
         """
-        phippery collect-phip-data \
+        phippery load-from-counts-tsv \
         --sample_table ${sample_table} \
         --peptide_table ${peptide_table} \
         -c '*.counts' \

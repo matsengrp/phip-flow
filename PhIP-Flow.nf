@@ -19,7 +19,7 @@ process generate_fasta_reference {
 
     shell:    
         """
-        phippery peptide-md-to-fasta -d ${pep_ref} -o peptides.fasta
+        phipflow peptide-md-to-fasta -d ${pep_ref} -o peptides.fasta
         """
 }
 
@@ -188,7 +188,7 @@ process collect_phip_data {
 
     script:
         """
-        phippery load-from-counts-tsv \
+        phipflow load-from-counts-tsv \
         --sample_table ${sample_table} \
         --peptide_table ${peptide_table} \
         -c '*.counts' \

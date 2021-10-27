@@ -1,11 +1,18 @@
+#!/usr/bin/env nextflow
 /*
 PhIP-Flow Pipeline Script
 
 Author: Jared G. Galloway
 */
 
+// Using DSL-2
+nextflow.enable.dsl=2
 
-peptide_reference_ch = Channel.fromPath("${params.peptide_table}")
+// Initialize parameters used in the workflow
+params.dataset_prefix = 'output'
+params.phip_data_dir = false
+params.peptide_table = false
+params.sample_table = false
 
 // CONVERT PEPTIDE METADATA TO FASTA
 process generate_fasta_reference {
@@ -13,11 +20,13 @@ process generate_fasta_reference {
     label 'single_thread_large_mem'
     //publishDir "${params.phip_data_dir}/"
 
-    input: file "pep_ref" from peptide_reference_ch
+    input:
+        file "pep_ref"
 
-    output: file "peptides.fasta" into pep_channel_fasta
+    output:
+        file "peptides.fasta"
 
-    shell:    
+    shell:
         """
         phipflow peptide-md-to-fasta -d ${pep_ref} -o peptides.fasta
         """
@@ -31,54 +40,15 @@ process generate_index {
     label 'multithread'
 
     input:
-        file "pep_fasta" from pep_channel_fasta
+        file "pep_fasta"
 
     output:
-        set(
-            val("peptide_ref"), 
-            file("peptide_index") 
-        ) into pep_channel_index
+        tuple val("peptide_ref"), path("peptide_index")
 
     shell:    
+    template "generate_index.sh"
 
-        if ("$params.alignment_tool" == "bowtie")
-            """
-            mkdir peptide_index
-            bowtie-build --threads 4 \
-            ${pep_fasta} peptide_index/peptide
-            """
-
-        else if ("$params.alignment_tool" == "bowtie2")
-            """
-            mkdir peptide_index
-            bowtie2-build --threads 4 \
-            ${pep_fasta} peptide_index/peptide
-            """
 }
-
-
-// CREATE SAMPLE CHANNEL
-Channel
-    .fromPath("${params.sample_table}")
-    .splitCsv(header:true)
-    .map{ row -> 
-        tuple(
-            "peptide_ref",
-            row.sample_id,
-            new File("${row.seq_dir}/${row.fastq_filename}")
-        ) 
-    }
-    .set { samples_ch }
-
-index_sample_ch = pep_channel_index
-    .cross(samples_ch)
-    .map{ ref, sample ->
-        tuple(
-            sample[1],          // sample_id
-            file(ref[1]),       // index files
-            file(sample[2]),    // sample path
-        )
-    }
 
 
 // ALIGN ALL SAMPLES TO THE REFERENCE
@@ -88,36 +58,15 @@ process short_read_alignment {
     label 'multithread'
 
     input:
-        set( 
-            val(sample_id), 
-            file(index),
-            file(respective_replicate_path),
-        ) from index_sample_ch
+        tuple val(sample_id), path(index), path(respective_replicate_path)
 
     output:
-        set(
-            val(sample_id),
-            file("${sample_id}.sam")
-        ) into aligned_reads_sam
+        tuple val(sample_id), path("${sample_id}.sam")
 
     shell:
+    template "short_read_alignment.sh"
 
-        if ("$params.alignment_tool" == "bowtie")
-            """
-            ${params.fastq_stream_func} ${respective_replicate_path} | \
-            bowtie ${params.align_args} --sam -x ${index}/peptide - > ${sample_id}.sam
-            """
-
-        else if ("$params.alignment_tool" == "bowtie2")
-            """
-            ${params.fastq_stream_func} ${respective_replicate_path} | \
-            bowtie2 ${params.align_args} -x ${index}/peptide - > ${sample_id}.sam
-            """
 }
-
-
-// SPLIT CHANNEL FOR COUNTS AND STATS IN PARALLEL
-aligned_reads_sam.into{aligned_reads_for_counts; aligned_reads_for_stats}
 
 
 // COMPUTE ALIGNMENT STATS FOR ALL STATS
@@ -127,19 +76,14 @@ process sam_to_stats {
     label 'multithread'
 
     input:
-        set(
-            val(sample_id),
-            file(sam_file)
-        ) from aligned_reads_for_stats
+        tuple val(sample_id), path(sam_file)
     
     output:
-        file("${sample_id}.stats") into alignment_stats_ch
+        path "${sample_id}.stats"
     
     shell:
-        """
-        samtools stats ${sam_file} | grep ^SN | cut -f 2- | 
-        sed '1p;7p;22p;25p;d' > ${sample_id}.stats
-        """ 
+    template "sam_to_stats.sh"
+
 }
 
 
@@ -150,49 +94,117 @@ process sam_to_counts {
     label 'multithread'
 
     input:
-        set(
-            val(sample_id),
-            file(sam_file)
-        ) from aligned_reads_for_counts
+        tuple val(sample_id), file(sam_file)
 
     output:
-        file("${sample_id}.counts") into counts_ch
+        path "${sample_id}.counts"
 
     script:
-        """
-        samtools view -u -@ 28 ${sam_file} | \
-        samtools sort -@ 28 - > ${sample_id}.bam
-        samtools sort -@ 28 ${sample_id}.bam -o ${sample_id}.sorted 
-        mv ${sample_id}.sorted ${sample_id}.bam
-        samtools index -b ${sample_id}.bam
-        samtools idxstats ${sample_id}.bam | \
-        cut -f 1,3 | sed "/^*/d" > ${sample_id}.counts
-        """
+    template "sam_to_counts.sh"
 }
 
 
 // COLLECT AND MERGE ALL 
 process collect_phip_data {
     
-    publishDir "${params.phip_data_dir}/", mode: 'copy'
+    publishDir "${params.phip_data_dir}/", mode: 'copy', overwrite: true
     label 'single_thread_large_mem'
 
     input:
-        file all_counts_files from counts_ch.collect()
-        file all_alignment_stats from alignment_stats_ch.collect()
-        file sample_table from Channel.fromPath("${params.sample_table}")
-        file peptide_table from Channel.fromPath("${params.peptide_table}")
+        file all_counts_files
+        file all_alignment_stats
+        file sample_table 
+        file peptide_table 
 
     output:
-        file "${params.dataset_prefix}.phip" into phip_data_ch
+        path "${params.dataset_prefix}.phip"
 
     script:
-        """
-        phipflow load-from-counts-tsv \
-        --sample_table ${sample_table} \
-        --peptide_table ${peptide_table} \
-        -c '*.counts' \
-        -s '*.stats' \
-        -o ${params.dataset_prefix}.phip
-        """ 
+    template "collect_phip_data.sh"
+}
+
+// Entrypoint for the main workflow, which is run by default
+workflow {
+
+    // Make sure that the user provided a peptide_table parameter
+    if (!params.peptide_table){
+        log.info"""
+        User must provide --peptide_table
+        """.stripIndent()
+        exit 1
+    }
+
+    // Make sure that the user provided a phip_data_dir parameter
+    if (!params.phip_data_dir){
+        log.info"""
+        User must provide --phip_data_dir
+        """.stripIndent()
+        exit 1
+    }
+
+    // Reference the peptide table provided by the user
+    peptide_reference_ch = Channel.fromPath("${params.peptide_table}")
+
+    // Convert peptide metadata to FASTA
+    generate_fasta_reference(
+        peptide_reference_ch
+    )
+
+    // Generate an index from that FASTA
+    generate_index(
+        generate_fasta_reference.out
+    )
+
+    // Make sure that the user provided a sample_table parameter
+    if (!params.sample_table){
+        log.info"""
+        User must provide --sample_table
+        """.stripIndent()
+        exit 1
+    }
+
+    // Create a channel with input data provided by the user
+    Channel
+        .fromPath("${params.sample_table}")
+        .splitCsv(header:true)
+        .map{ row -> 
+            tuple(
+                "peptide_ref",
+                row.sample_id,
+                file("${row.seq_dir}/${row.fastq_filename}")
+            ) 
+        }
+        .set { samples_ch }
+
+    // Align all samples to the reference
+    short_read_alignment(
+        generate_index.out
+            .cross(samples_ch)
+            .map{ ref, sample ->
+                tuple(
+                    sample[1],          // sample_id
+                    file(ref[1]),       // index files
+                    file(sample[2]),    // sample path
+                )
+            }
+    )
+
+    // Compute counts for all samples
+    sam_to_counts(
+        short_read_alignment.out
+    )
+
+    // Compute alignment stats
+    sam_to_stats(
+        short_read_alignment.out
+    )
+
+    // Collect and merge all
+    collect_phip_data(
+        sam_to_counts.out.toSortedList(),
+        sam_to_stats.out.toSortedList(),
+        Channel.fromPath("${params.sample_table}"),
+        Channel.fromPath("${params.peptide_table}")
+    )
+
 }

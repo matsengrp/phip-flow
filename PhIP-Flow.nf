@@ -45,7 +45,7 @@ process generate_index {
     output:
         tuple val("peptide_ref"), path("peptide_index")
 
-    shell:    
+    script:    
     template "generate_index.sh"
 
 }
@@ -63,7 +63,7 @@ process short_read_alignment {
     output:
         tuple val(sample_id), path("${sample_id}.sam")
 
-    shell:
+    script:
     template "short_read_alignment.sh"
 
 }
@@ -81,7 +81,7 @@ process sam_to_stats {
     output:
         path "${sample_id}.stats"
     
-    shell:
+    script:
     template "sam_to_stats.sh"
 
 }

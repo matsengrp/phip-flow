@@ -2,26 +2,20 @@
 
 set -euo pipefail
 
-if [[ "${params.alignment_tool}" == "bowtie" ]]; then
+STREAM_FILE_CMD=!{params.fastq_stream_func}
+FASTQ=!{respective_replicate_path}
+INDEX=!{index}/peptide
+ALIGN_OUT_FN=!{sample_id}.sam
 
-    echo "Alignment tool is bowtie"
-
-    ${params.fastq_stream_func} ${respective_replicate_path} | \
-    bowtie ${params.align_args} --sam -x ${index}/peptide - > ${sample_id}.sam
-
-else
-
-    if [[ "${params.alignment_tool}" == "bowtie2" ]]; then
-
-        echo "Alignment tool is bowtie2"
-
-        ${params.fastq_stream_func} ${respective_replicate_path} | \
-        bowtie2 ${params.align_args} -x ${index}/peptide - > ${sample_id}.sam
-
-    else
-
-        echo "${params.alignment_tool} is not recognized as bowtie or bowtie2 -- ERROR"
-
-    fi
-
-fi
+$STREAM_FILE_CMD $FASTQ | bowtie \
+  --trim3 8 \
+  --threads 4 \
+  -n 2 \
+  -l 117 \
+  --tryhard \
+  --nomaqround \
+  --norc \
+  --best \
+  --sam \
+  --quiet \
+  -x $INDEX - > $ALIGN_OUT_FN

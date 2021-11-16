@@ -2,12 +2,11 @@
 
 set -euo pipefail
 
+FASTA=!{pep_fasta}
+CPUS=!{task.cpus}
+
 mkdir peptide_index
-
-echo "Alignment tool is ${params.alignment_tool}"
-echo "Running ${params.alignment_tool}-build"
-
-${params.alignment_tool}-build \
-    --threads ${task.cpus} \
-    ${pep_fasta} \
+bowtie-build \
+    --threads $CPUS \
+    $FASTA \
     peptide_index/peptide

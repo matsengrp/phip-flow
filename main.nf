@@ -13,7 +13,7 @@
 
 nextflow.enable.dsl=2
 include { ALIGN_COUNTS as generate_alignment_counts } from './workflows/alignment-counts-workflow.nf'
-include { FOLD_ENR as compute_cpm_fold_enrichment } from './workflows/enrichment-workflow.nf'
+include { cpm_fold_enrichment as compute_cpm_fold_enrichment } from './workflows/enrichment-workflow.nf'
 include { to_tall as write_ds_to_tall_csv } from './workflows/io.nf'
 include { to_wide as write_ds_to_wide_csv } from './workflows/io.nf'
 

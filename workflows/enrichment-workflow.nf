@@ -13,7 +13,7 @@ nextflow.enable.dsl=2
 // all that layer the analysis.
 
 // compute fold enrichment on a single .phip file
-process fold_enrichment_process {
+process cpm_fold_enrichment {
 
     label 'phippery'
 
@@ -24,13 +24,18 @@ process fold_enrichment_process {
         file phip_data
 
     shell:
-    template fold_enrichment.sh
+        """
+        phippery cpm -o !{phip_data} !{phip_data}
+        phippery query-expression "control_status=='library'" \
+            -o lib.phip !{phip_data}
+        phippery fold-enrichment -dt "cpm" -o !{phip_data} lib.phip !{phip_data}
+        """
 }
 
-workflow FOLD_ENR {
-    take: phip_data
-    main:
-        fold_enrichment_process(phip_data)
-    emit:
-        fold_enrichment_process.out
-}
+// workflow FOLD_ENR {
+//     take: phip_data
+//     main:
+//         fold_enrichment_process(phip_data)
+//     emit:
+//         fold_enrichment_process.out
+// }

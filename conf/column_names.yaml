@@ -1,0 +1,70 @@
+# Columns Name configuration file (YAML)
+
+# Most of the phippery functions rely on one or more columns
+# be present in the dataset. In order to document and
+# allow for modification of these columns, we document them here.
+
+# The top level is dimension names. This will determine the
+# axis by which we perform oporations. 
+# If "factor_levels" is included in column keys, then the factor
+# level groups in any one columns must be the only existing 
+
+# running list of possible functions that may require the columns
+# described for each dimension table:
+#
+# Is this the right place for this? maybe this config file is just
+# for the built-in workflows 
+
+# 1. alignment-counts-workflow
+# 2. fold-enrichment-workflow
+
+
+---
+dimensions:
+
+  sample:
+
+    id:
+      column_name: "sample_id"
+      description: "The interger identifier for a given sample"
+      pandas_type: pd.Int64Dtype
+      required_for:
+        - alignment-counts-workflow
+
+    fastq:
+      column_name: "fastq_filename"
+      description: "The filepath leading to the fastq file for a specific file"
+      pandas_type: pd.StringDtype
+      required_for:
+        - alignment-counts-workflow
+
+    sample_type:
+      column_name: "control_status"
+      description: "The type of sample IP wrt beads, IP, library input"
+      pandas_type: pd.StringDtype
+      required_for:
+        - fold-enrichment-workflow
+      factor_levels:
+        - empirical
+        - beads_only
+        - library
+
+        
+  peptide:
+
+    id:
+      column_name: "peptide_id"
+      description: "The interger identifier for a given peptide"
+      pandas_type: pd.Int64Dtype
+      required_for:
+        - alignment-counts-workflow
+
+    Oligo:
+      column_name: "Oligo"
+      description: "The oligonucleotide sequence describing the peptide, currently, only lower case nt's get stripped"
+      pandas_type: pd.StringDtype
+      required_for:
+        - alignment-counts-workflow
+    
+
+

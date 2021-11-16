@@ -31,11 +31,3 @@ process cpm_fold_enrichment {
         phippery fold-enrichment -dt "cpm" -o !{phip_data} lib.phip !{phip_data}
         """
 }
-
-// workflow FOLD_ENR {
-//     take: phip_data
-//     main:
-//         fold_enrichment_process(phip_data)
-//     emit:
-//         fold_enrichment_process.out
-// }

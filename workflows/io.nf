@@ -20,6 +20,8 @@ process to_tall {
 
     input:
         file phip_data
+    output:
+        file "*.csv"
 
     shell:
         """
@@ -34,6 +36,8 @@ process to_wide {
 
     input:
         file phip_data
+    output:
+        file "*.csv"
 
     shell:
         """

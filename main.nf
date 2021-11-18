@@ -1,6 +1,5 @@
 
 // TODO - remove automatic publish_dir from processes generate counts, leave that to io
-// TODO - remove workflow from enrichment and just write some generic processes
 // TODO write a batch worflow, which parallelizes the given workflow around sample 
 // (or peptide? groups)
 // TODO add a check workflow that makes sure the columns for requested workflows exist
@@ -19,15 +18,28 @@ include { to_wide as write_ds_to_wide_csv } from './workflows/io.nf'
 
 workflow {
     // GENERATE ALIGNMENT COUNTS
+
+    // Input defined by the nextflow.config file
+    // If you rename or make your own config file, 
+    // be sure to specificy -C your.config when running
+    // this workflow.
+
+    // output 'ds' is the pickle dump'd binary xarray
+    // dataset containing the raw counts
     ds = generate_alignment_counts()
 
     // ANALYSIS
+    // the config file specifies which analysis you would like run.
+    // each one of these subflows takes the binary xarray file,
+    // and returns it modified ("layered") with the analysis
     if( params.compute_enrichment )
         ds = compute_cpm_fold_enrichment(ds)
    
-    // IO
+    // OUTPUT
+    // Write the analysis to disk in any of the formats you desire.
     if( params.output_tall ) 
         write_ds_to_tall_csv(ds)
+
     if( params.output_wide )
         write_ds_to_wide_csv(ds)
 }

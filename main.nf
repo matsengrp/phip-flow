@@ -1,15 +1,4 @@
 
-// TODO - remove automatic publish_dir from processes generate counts, leave that to io
-// TODO write a batch worflow, which parallelizes the given workflow around sample 
-// (or peptide? groups)
-// TODO add a check workflow that makes sure the columns for requested workflows exist
-// could make a replacement config file - meh later
-// TODO add a test of example data
-// TODO separate alignment into template which can be easily manipulated if desired
-// TODO clean up containers
-// TODO: can we split these things up? like a config for infrastructure?
-// TODO: move the phippery workflow to processes and out of templates - keep it simple
-
 nextflow.enable.dsl=2
 include { ALIGN_COUNTS as generate_alignment_counts } from './workflows/alignment-counts-workflow.nf'
 include { cpm_fold_enrichment as compute_cpm_fold_enrichment } from './workflows/enrichment-workflow.nf'

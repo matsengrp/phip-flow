@@ -1,13 +1,14 @@
 #!/bin/bash
 
 set -euo pipefail
+CPUS=!{task.cpus}
 
 # Convert SAM to BAM, and sort
-samtools view -u -@ 28 !{sam_file} | \
-    samtools sort -@ 28 - > !{sample_id}.bam
+samtools view -u -@ ${CPUS} !{sam_file} | \
+    samtools sort -@ ${CPUS} - > !{sample_id}.bam
 
 # Sort the BAM again
-samtools sort -@ 28 !{sample_id}.bam -o !{sample_id}.sorted 
+samtools sort -@ ${CPUS} !{sample_id}.bam -o !{sample_id}.sorted 
 
 # Overwrite the first sorted BAM with the second
 mv !{sample_id}.sorted !{sample_id}.bam

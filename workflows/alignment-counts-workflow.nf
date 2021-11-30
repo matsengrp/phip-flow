@@ -21,10 +21,10 @@ process generate_fasta_reference {
     //publishDir "${params.phip_data_dir}/"
 
     input:
-        file "pep_ref"
+        path "pep_ref"
 
     output:
-        file "peptides.fasta"
+        path "peptides.fasta"
 
     shell:
         """
@@ -40,7 +40,7 @@ process generate_index {
     label 'alignment_tool'
 
     input:
-        file "pep_fasta"
+        path "pep_fasta"
 
     output:
         tuple val("peptide_ref"), path("peptide_index")
@@ -94,7 +94,7 @@ process sam_to_counts {
     label 'samtools'
 
     input:
-        tuple val(sample_id), file(sam_file)
+        tuple val(sample_id), path(sam_file)
 
     output:
         path "${sample_id}.counts"
@@ -111,10 +111,10 @@ process collect_phip_data {
     label 'phippery'
 
     input:
-        file all_counts_files
-        file all_alignment_stats
-        file sample_table 
-        file peptide_table 
+        path all_counts_files
+        path all_alignment_stats
+        path sample_table 
+        path peptide_table 
 
     output:
         path "${params.dataset_prefix}.phip"
@@ -125,30 +125,6 @@ process collect_phip_data {
 
 // Entrypoint for the main workflow, which is run by default
 workflow ALIGN_COUNTS {
-
-    // Make sure that the user provided a peptide_table parameter
-    //if (!params.peptide_table){
-    //    log.info"""
-    //    User must provide --peptide_table
-    //    """.stripIndent()
-    //    exit 1
-    //}
-
-    // Make sure that the user provided a phip_data_dir parameter
-    //if (!params.phip_data_dir){
-    //    log.info"""
-    //    User must provide --phip_data_dir
-    //    """.stripIndent()
-    //    exit 1
-    //}
-
-    // Make sure that the user provided a sample_table parameter
-    //if (!params.sample_table){
-    //    log.info"""
-    //    User must provide --sample_table
-    //    """.stripIndent()
-    //    exit 1
-    //}
 
     main:
         // Reference the peptide table provided by the user

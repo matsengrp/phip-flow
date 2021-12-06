@@ -6,7 +6,7 @@ FASTA=!{pep_fasta}
 CPUS=!{task.cpus}
 
 mkdir peptide_index
-bowtie-build \
+bowtie2-build \
     --threads $CPUS \
     $FASTA \
     peptide_index/peptide

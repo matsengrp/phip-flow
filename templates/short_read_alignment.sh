@@ -29,6 +29,13 @@ else
     TRIM3=0
 fi
 
+$STREAM_FILE_CMD $FASTQ | bowtie2 \
+  -a \
+  --trim3 $TRIM3 \
+  --threads $CPUS \
+  -x $INDEX - > $ALIGN_OUT_FN
+
+: '
 $STREAM_FILE_CMD $FASTQ | bowtie \
   --trim3 $TRIM3 \
   --threads $CPUS \
@@ -41,3 +48,13 @@ $STREAM_FILE_CMD $FASTQ | bowtie \
   --sam \
   --quiet \
   -x $INDEX - > $ALIGN_OUT_FN
+'
+
+
+
+
+
+
+
+
+

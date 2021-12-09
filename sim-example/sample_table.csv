@@ -1,0 +1,13 @@
+sample_id,fastq_filename,seq_dir
+0,sample_0.fastq,NGS/expa/
+1,sample_1.fastq,NGS/expa/
+2,sample_2.fastq,NGS/expa/
+3,sample_3.fastq,NGS/expa/
+4,sample_4.fastq,NGS/expa/
+5,sample_5.fastq,NGS/expa/
+6,sample_6.fastq,NGS/expa/
+7,sample_7.fastq,NGS/expa/
+8,sample_8.fastq,NGS/expa/
+9,sample_9.fastq,NGS/expa/
+10,sample_10.fastq,NGS/expa/
+11,sample_11.fastq,NGS/expa/

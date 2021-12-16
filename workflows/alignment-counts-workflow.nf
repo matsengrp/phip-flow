@@ -148,7 +148,7 @@ workflow ALIGN_COUNTS {
                 tuple(
                     "peptide_ref",
                     row.sample_id,
-                    file("${row.seq_dir}/${row.fastq_filename}")
+                    file("${row.fastq_filepath}")
                 ) 
             }
             .set { samples_ch }

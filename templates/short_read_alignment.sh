@@ -22,6 +22,7 @@ READ_LENGTH=!{params.read_length}
 PEPTIDE_LENGTH=!{params.peptide_tile_length}
 CPUS=!{task.cpus}
 MM=!{params.n_mismatches}
+OP_ARGS="!{params.bowtie_optional_args}"
 
 if [ ${PEPTIDE_LENGTH} -lt ${READ_LENGTH} ]; then
     let TRIM3=${READ_LENGTH}-${PEPTIDE_LENGTH}
@@ -29,15 +30,12 @@ else
     TRIM3=0
 fi
 
+echo $OP_ARGS
+
 $STREAM_FILE_CMD $FASTQ | bowtie \
   --trim3 $TRIM3 \
   --threads $CPUS \
   -n $MM \
   -l $PEPTIDE_LENGTH \
-  --tryhard \
-  --nomaqround \
-  --norc \
-  --best \
-  --sam \
-  --quiet \
+  $OP_ARGS \
   -x $INDEX - > $ALIGN_OUT_FN

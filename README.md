@@ -1,32 +1,54 @@
-# PhIP-Flow
+# PHIP-FLOW
+A Nextflow pipeline for Common Phage Immuno-Precipitation Sequencing experiments.
+See the [Documentation](https://matsengrp.github.io/phippery/introduction.html)
+for more details and usage examples.
 
-A general PhIP-Seq short read alignment pipeline using [NextFlow](https://www.nextflow.io/) 
-to produce a dataset containing the 
-_raw alignment counts_ , 
-_sample annotation table,_ and 
-[_peptide annotation table_]() , 
-all merged into an xarray 
-[DataSet](http://xarray.pydata.org/en/stable/api.html#dataset). 
-This dataset organization can subsequently be queried analyzed by using the 
-[phippery](https://github.com/matsengrp/phippery) Python package.
+[![nextflow]()]()
+[![Build Status]()]()
 
-This repository exists primarily to host the bleeding edge pipeline script, and should not need to be cloned unless
-one would like to modify the pipeline. If looking to simply run with the appropriate 
-configuration scripts, 
-one can simply use the Nextflow's build in 
-git aware infrastructure
-```
-$ nextflow run matsengrp/phip-flow/PhIP-Flow.nf -C foo-phip.config -o bar.phip
-```
+## Quickstart 
 
-For example configuration files and more helpful materials, the 
-[Documentation](https://matsengrp.github.io/phippery/Nextflow.html)
-will walk you through examples 
-that can be found in the 
-[Template repository](https://github.com/matsengrp/phip-flow-template)
+Install `Nextflow` by using the following command: 
 
-The pipeline Directed Acyclic Graph is visualized below:
-<p align="center">
-  <img src="dag.png" width="375">
-</p>
+    curl -s https://get.nextflow.io | bash 
+    
+Download the `Docker` Desktop, there exists several distibutions packaged for
+various linux flavors
 
+    curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
+
+Launch the pipeline execution with the following command: 
+
+    nextflow run matsengrp/phip-flow -profile docker
+
+Note: the [Dockerfile](docker/Dockerfile) contains all the required dependencies. 
+Add the `-profile docker` to enable the containerised execution to the 
+example command line shown below. 
+
+## Pipeline Description
+
+## Input files
+
+## Pipeline parameters
+    
+## Pipeline results
+
+## Schematic Outline
+
+## Requirements 
+
+* [Nextflow](https://www.nextflow.io) 20.07.1 (or later)
+* [Docker](https://www.docker.com/) 1.10 (or later) or [Singularity](http://singularity.lbl.gov) engine
+
+required software components reported in the following section. See the included 
+[Dockerfile](docker/Dockerfile) for the configuration details.
+
+## Components 
+
+PhIP-Flow uses the following software components and tools: 
+
+<TODO>
+
+## Acknowledgements
+
+<TODO>

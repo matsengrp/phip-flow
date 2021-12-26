@@ -30,41 +30,12 @@ else
     TRIM3=0
 fi
 
-<<<<<<< HEAD
 echo $OP_ARGS
-=======
-: '
-$STREAM_FILE_CMD $FASTQ | bowtie2 \
-  -a \
-  --trim3 $TRIM3 \
-  --threads $CPUS \
-  -x $INDEX - > $ALIGN_OUT_FN
-'
->>>>>>> 52c7d5e41f68168484a247e15834d46253453b83
 
 $STREAM_FILE_CMD $FASTQ | bowtie \
   --trim3 $TRIM3 \
   --threads $CPUS \
   -n $MM \
   -l $PEPTIDE_LENGTH \
-<<<<<<< HEAD
   $OP_ARGS \
-=======
-  -a \
-  --tryhard \
-  --nomaqround \
-  --norc \
-  --best \
-  --sam \
-  --quiet \
->>>>>>> 52c7d5e41f68168484a247e15834d46253453b83
   -x $INDEX - > $ALIGN_OUT_FN
-
-
-
-
-
-
-
-
-

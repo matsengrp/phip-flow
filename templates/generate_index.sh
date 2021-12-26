@@ -2,7 +2,7 @@
 
 set -euo pipefail
 
-FASTA=!{pep_fasta}
+FASTA=!{oligo_fasta}
 CPUS=!{task.cpus}
 
 mkdir peptide_index

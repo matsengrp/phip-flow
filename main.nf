@@ -1,34 +1,53 @@
+/*
+ * This Source Code Form is subject to the terms of the GNU GENERAL PUBLIC LICENCE
+ * License, v. 3.0. 
+ */
 
+
+/* 
+ * 'PhIP-Flow' - A Nextflow pipeline for running common phip-seq analysis workflows
+ * 
+ * Fred Hutchinson Cancer Research Center, Seattle WA.
+ * 
+ * Jared Galloway
+ * Kevin Sung
+ * Sam Minot
+ * Erick Matsen 
+ */
+
+/* 
+ * Enable DSL 2 syntax
+ */
+nextflow.enable.dsl = 2
+
+/*
+ * Define the default parameters - example data get's run by default
+ */ 
+params.sample_table     = "$baseDir/data/pan-cov-example/sample_table.csv"
+params.peptide_table    = "$baseDir/data/pan-cov-example/peptide_table.csv"
+params.results          = "$PWD/results/"
+
+
+log.info """\
+P H I P - F L O W!
+Matsen, Overbaugh, and Minot Labs
+Fred Hutchinson CRC, Seattle WA
+================================
+sample_table    : $params.sample_table
+peptide_table   : $params.peptide_table
+results         : $params.results
+
+"""
+
+/* 
+ * Import modules 
+ */
 nextflow.enable.dsl=2
-include { ALIGN_COUNTS as generate_alignment_counts } from './workflows/alignment-counts-workflow.nf'
-include { cpm_fold_enrichment as compute_cpm_fold_enrichment } from './workflows/enrichment-workflow.nf'
-include { to_tall as write_ds_to_tall_csv } from './workflows/io.nf'
-include { to_wide as write_ds_to_wide_csv } from './workflows/io.nf'
+
+include { ALIGN } from './workflows/alignment.nf'
+include { STATS } from './workflows/statistics.nf'
+include { DSOUT } from './workflows/output.nf'
 
 workflow {
-    // GENERATE ALIGNMENT COUNTS
-
-    // Input defined by the nextflow.config file
-    // If you rename or make your own config file, 
-    // be sure to specificy -C your.config when running
-    // this workflow.
-
-    // output 'ds' is the pickle dump'd binary xarray
-    // dataset containing the raw counts
-    ds = generate_alignment_counts()
-
-    // ANALYSIS
-    // the config file specifies which analysis you would like run.
-    // each one of these subflows takes the binary xarray file,
-    // and returns it modified ("layered") with the analysis
-    if( params.compute_enrichment )
-        ds = compute_cpm_fold_enrichment(ds)
-   
-    // OUTPUT
-    // Write the analysis to disk in any of the formats you desire.
-    if( params.output_tall ) 
-        write_ds_to_tall_csv(ds)
-
-    if( params.output_wide )
-        write_ds_to_wide_csv(ds)
+    ALIGN | STATS | DSOUT
 }

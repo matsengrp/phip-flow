@@ -34,10 +34,8 @@ process validate_peptide_table{
 
 // CONVERT PEPTIDE METADATA TO FASTA
 process generate_fasta_reference {
-    input:
-    path peptide_table
-    output:
-    path "peptides.fasta"
+    input: path peptide_table
+    output: path "peptides.fasta"
     script:
     """
     generate-fasta.py \
@@ -139,7 +137,7 @@ workflow ALIGN {
                 tuple(
                     "peptide_ref",
                     row.sample_id,
-                    file("${row.fastq_filepath}")
+                    file("${params.reads_dir}/${row.fastq_filepath}")
                 ) 
             }
             .set { samples_ch }
@@ -170,16 +168,3 @@ workflow ALIGN {
     emit:
         final_output
 }
-
-
-
-
-
-
-
-
-
-
-
-
-

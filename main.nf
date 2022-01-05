@@ -27,6 +27,7 @@ params.sample_table     = "$baseDir/data/pan-cov-example/sample_table.csv"
 params.peptide_table    = "$baseDir/data/pan-cov-example/peptide_table.csv"
 params.results          = "$PWD/results/"
 
+
 log.info """\
 P H I P - F L O W!
 Matsen, Overbaugh, and Minot Labs

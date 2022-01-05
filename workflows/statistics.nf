@@ -51,7 +51,6 @@ OPTIONALLY RUN STATISTICS
 (ANNOTATIONS REQUIRED & FLAG)
 */
 
-//phippery cpm -o cpm.phip !{phip_data}
 process cpm_fold_enrichment {
     input: path phip_data
     output: path "fold_enr.phip"

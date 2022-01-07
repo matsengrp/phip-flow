@@ -1,11 +1,13 @@
-FROM docker pull quay.io/hdc-workflows/ubuntu
+FROM quay.io/hdc-workflows/ubuntu:20.04
 
 LABEL maintainer "Jared Galloway <jgallowa@fredhutch.rg>" \
       version "1.0" \
       description "Common PhIP-Seq Workflows"
 
 # install needed tools
-RUN apt-get update --fix-missing -qq && apt-get install -y -q \
+RUN apt-get update --fix-missing -qq && \
+    DEBIAN_FRONTEND=noninteractive \
+    apt-get install -y -q \
     git \
     curl \
     locales \

@@ -16,12 +16,11 @@ process dump_tall_csv {
 
 process dump_wide_csv {
     publishDir "$params.results/wide_data/", mode: 'copy', overwrite: true
-    input: file phip_data
-    output: file "*.csv"
+    input: path phip_data
+    output: path "*.csv"
     when: params.output_wide_csv
     shell:
     """
-    mkdir $params.dataset_prefix
     phippery to-wide-csv -o $params.dataset_prefix $phip_data
     """
 }

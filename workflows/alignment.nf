@@ -126,9 +126,11 @@ process replicate_counts {
 workflow ALIGN {
 
     main:
+        sample_ch = Channel.fromPath(params.sample_table)
+        peptide_ch = Channel.fromPath(params.peptide_table)
 
-        validate_sample_table(params.sample_table)
-        validate_peptide_table(params.peptide_table) \
+        validate_sample_table(sample_ch)
+        validate_peptide_table(peptide_ch) \
             | generate_fasta_reference | generate_index
 
         validate_sample_table.out
@@ -137,7 +139,7 @@ workflow ALIGN {
                 tuple(
                     "peptide_ref",
                     row.sample_id,
-                    file("${params.reads_dir}/${row.fastq_filepath}")
+                    file("$params.reads_prefix/$row.fastq_filepath")
                 ) 
             }
             .set { samples_ch }

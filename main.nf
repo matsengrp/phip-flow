@@ -24,6 +24,10 @@ nextflow.enable.dsl = 2
  * Define the default parameters - example data get's run by default
  */ 
 params.sample_table     = "$baseDir/data/pan-cov-example/sample_table.csv"
+if (params.sample_table != "$baseDir/data/pan-cov-example/sample_table.csv")
+    params.reads_prefix = "$launchDir"
+else
+    params.reads_prefix = "$baseDir"
 params.peptide_table    = "$baseDir/data/pan-cov-example/peptide_table.csv"
 params.results          = "$PWD/results/"
 

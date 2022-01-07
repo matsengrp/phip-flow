@@ -1,4 +1,4 @@
-FROM debian:stable
+FROM docker pull quay.io/hdc-workflows/ubuntu
 
 LABEL maintainer "Jared Galloway <jgallowa@fredhutch.rg>" \
       version "1.0" \

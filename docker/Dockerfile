@@ -19,19 +19,26 @@ RUN apt-get update --fix-missing -qq && \
     python3 \
     python3-pip \ 
     python3-venv \
-    bowtie
+    zip
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
+
+# install phippery
+RUN git clone https://github.com/matsengrp/phippery.git \
+    && (cd phippery && pip install .)
+
+
+# install pre-build binary Bowtie1.3
+RUN curl 'https://iweb.dl.sourceforge.net/project/bowtie-bio/bowtie/1.3.1/bowtie-1.3.1-linux-x86_64.zip' \
+    --output bowtie-1.3.1-linux-x86_64.zip \
+    && unzip bowtie-1.3.1-linux-x86_64.zip \
+    && (cd /usr/bin/ && ln -s /bowtie-1.3.1-linux-x86_64/* ./)
+
 
 # install SAMtools
 RUN curl -fksSL https://github.com/samtools/samtools/releases/download/1.3.1/samtools-1.3.1.tar.bz2 | tar xj && \
     cd samtools-1.3.1 && \
     make all all-htslib && make install install-htslib
 
-# install phippery
-RUN git clone https://github.com/matsengrp/phippery.git \
-    && (cd phippery && pip install .)
-#COPY ../../phippery/ .
-#RUN (cd phippery && pip install .)

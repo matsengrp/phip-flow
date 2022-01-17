@@ -131,7 +131,7 @@ workflow STATS {
     // collect all the datasets statistics and merge
     auto_stats_ch.concat(
         cpm_fold_enr_ch,
-        fit_predict_neg_binom_ch
+        fit_pred_neg_binom_ch
     ) | collect | merge_binary_datasets
 
     emit:

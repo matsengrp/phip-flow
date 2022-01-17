@@ -23,7 +23,7 @@ https://matsengrp.github.io/phippery/bkg-model.html
 """
 
 import phippery
-import phipppey.modeling as modeling
+import phippery.modeling as modeling
 import phippery.phipdata as phipdata
 import phippery.utils as utils
 import argparse
@@ -48,7 +48,6 @@ empirical_ids = utils.sample_id_coordinate_from_query(
 # split dataset into train/fit
 empirical_ds = ds.loc[dict(sample_id=empirical_ids)]
 beads_ds = ds.loc[dict(sample_id=beads_ids)]
-
 
 fit_ds = modeling.neg_binom_model(
     ds,

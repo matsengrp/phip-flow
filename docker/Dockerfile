@@ -19,7 +19,8 @@ RUN apt-get update --fix-missing -qq && \
     python3 \
     python3-pip \ 
     python3-venv \
-    zip
+    zip \
+    wget
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV

@@ -26,7 +26,9 @@ import phippery
 import phippery.modeling as modeling
 import phippery.phipdata as phipdata
 import phippery.utils as utils
+
 import argparse
+import warnings
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-ds", type=str)
@@ -39,6 +41,8 @@ ds = phippery.load(args.ds)
 beads_ids = utils.sample_id_coordinate_from_query(
         ds, ["control_status == 'beads_only'"]
 )
+if len(beads_ids) <= 50:
+    warnings.warn("With less that 50 beads_only samples, it's probably that many peptide distributions fits will not converge, esspecially if coverage is low. See https://matsengrp.github.io/phippery/bkg-model.html for more.")
 
 beads_ds = ds.loc[dict(sample_id=beads_ids)]
 

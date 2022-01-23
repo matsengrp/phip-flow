@@ -40,16 +40,9 @@ beads_ids = utils.sample_id_coordinate_from_query(
         ds, ["control_status == 'beads_only'"]
 )
 
-# grab relevant empirical sample id's
-empirical_ids = utils.sample_id_coordinate_from_query(
-        ds, ["control_status == 'empirical'"]
-)
-
-# split dataset into train/fit
-empirical_ds = ds.loc[dict(sample_id=empirical_ids)]
 beads_ds = ds.loc[dict(sample_id=beads_ids)]
 
-fit_ds = modeling.neg_binom_model(
+params, fit_ds = modeling.neg_binom_model(
     ds,
     beads_ds,
     nb_p=2,

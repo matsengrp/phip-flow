@@ -1,7 +1,7 @@
 FROM quay.io/hdc-workflows/ubuntu:20.04
 
 LABEL maintainer "Jared Galloway <jgallowa@fredhutch.rg>" \
-      version "1.0" \
+      version "1.3" \
       description "Common PhIP-Seq Workflows"
 
 # install needed tools

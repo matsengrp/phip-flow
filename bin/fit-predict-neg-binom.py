@@ -24,7 +24,7 @@ https://matsengrp.github.io/phippery/bkg-model.html
 
 import phippery
 import phippery.modeling as modeling
-import phippery.phipdata as phipdata
+# import phippery.phipdata as phipdata
 import phippery.utils as utils
 
 import argparse
@@ -57,4 +57,4 @@ params, fit_ds = modeling.neg_binom_model(
     new_table_name="neg_binom_mlxp",
 )
 
-phippery.dump(fit_ds, args.out)
+phippery.dump(fit_ds, args.o)

@@ -10,7 +10,7 @@ Currently, this function only sets the raw counts, in place.
 import pandas as pd
 import numpy as np
 import phippery
-from phippery.phipdata import get_annotation_table
+from phippery.utils import *
 import sys
 import argparse
 

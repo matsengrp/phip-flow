@@ -1,8 +1,6 @@
 #!/usr/bin/env python
 """
-Fit a negative binomial model to beads_only samples in
-a dataset. Then predict on empirical IP samples to
-get mlxp values of significance.
+fit the zscore model.
 
 Requirements:
 1.  a sample table annotation column "control_status"
@@ -12,19 +10,19 @@ Requirements:
     after the model is fit to each peptide.
 
 2.  The xarray phip dataset passed in must have the
-    "size_factors" layer in the enrichment tables.
+    "cpm" layer in the enrichment tables.
     and we expect the two types of sample groups
-    were normalized using size factors together
+    were normalized using counts per million together
     as is the default when computing stats.
 
 For a more complete description, 
 please see the overview by Kevin Sung found at
-https://matsengrp.github.io/phippery/bkg-model.html 
+https://matsengrp.github.io/phippery/
 """
 
 import phippery
-import phippery.modeling as modeling
 import phippery.utils as utils
+from phippery.modeling import zscore
 
 import argparse
 import warnings
@@ -40,20 +38,18 @@ ds = phippery.load(args.ds)
 beads_ids = utils.sample_id_coordinate_from_query(
         ds, ["control_status == 'beads_only'"]
 )
-if len(beads_ids) <= 50:
-    warnings.warn("With less that 50 beads_only samples, it's probably that many peptide distributions fits will not converge, esspecially if coverage is low. See https://matsengrp.github.io/phippery/bkg-model.html for more.")
 
 beads_ds = ds.loc[dict(sample_id=beads_ids)]
 
-params, fit_ds = modeling.neg_binom_model(
+zscore_ds = zscore(
     ds,
-    beads_ds,
-    nb_p=2,
-    trim_percentile=100.,
-    outlier_reject_scale=10.,
-    data_table="size_factors",
+    beads_ds,                   # dataset of beads-only samples
+    data_table='cpm',           # peptide quantity for performing binning and computing z-scores
+    min_Npeptides_per_bin=300,  # mininum number of peptides per bin
+    lower_quantile_limit=0.05,  # counts below this quantile are ignored for computing mean, stddev
+    upper_quantile_limit=0.95,  # counts above this quantile are igonred for computing mean, stddev
     inplace=False,
-    new_table_name="neg_binom_mlxp",
+    new_table_name='zscore'
 )
 
-phippery.dump(fit_ds, args.o)
+phippery.dump(zscore_ds, args.o)

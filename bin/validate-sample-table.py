@@ -2,7 +2,6 @@
 
 import argparse
 import pandas as pd
-import sys
 
 parser = argparse.ArgumentParser()
 parser.add_argument("-s", type=str)

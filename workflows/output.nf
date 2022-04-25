@@ -36,12 +36,29 @@ process dump_binary {
     """
 }
 
+process aggregate_organisms {
+    publishDir "$params.results/aggregated_data/", mode: 'copy', overwrite: true
+    input:
+        // All output data in wide format (CSV)
+        path "*"
+        // Any public epitopes defined in CSV format
+        path public_epitopes_csv
+    output: path "*.csv"
+    when: params.summarize_by_organism
+    shell:
+    template: "aggregate_organisms.py"
+}
+
 workflow DSOUT {
     take: dataset
     main:
     dump_binary(dataset)
     dump_wide_csv(dataset)
     dump_tall_csv(dataset)
+    aggregate_organisms(
+        dump_wide_csv.out,
+        file("${params.public_epitopes_csv}")
+    )
 }
 
 

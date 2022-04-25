@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
 from collections import defaultdict
+import os
 from typing import List
 import pandas as pd
 import logging
@@ -57,26 +58,23 @@ class AggregatePhIP:
         # Mapping peptides to organisms
         self.peptide_mapping = self.read_peptide_mapping()
 
-        print(self.peptide_mapping.head(10))
-
         # The user must specify the length of each peptide
-        self.peptide_length = int("56")
-        # FIXME
+        self.peptide_length = int("${params.peptide_length}")
         self.logger.info(f"Peptide length: {self.peptide_length}")
 
         # The user must specify the maximum overlap
-        self.max_overlap = int("7")
-        # FIXME
+        self.max_overlap = int("${params.max_overlap}")
         self.logger.info(f"Maximum overlap: {self.max_overlap}")
 
         # The user must specify the minimum z-score threshold
-        self.zscore_threshold = float("2.5")
-        # FIXME
+        self.zscore_threshold = float("${params.zscore_threshold}")
         self.logger.info(f"Z-score threshold: {self.zscore_threshold}")
 
         # Read in the z-scores
-        self.zscores = pd.read_csv("inputs/zscore.csv", index_col=0)
-        # FIXME
+        zscores_fp = "${params.dataset_prefix}_zscore.csv"
+        self.logger.info(f"Reading in z-scores from: {zscores_fp}")
+        assert os.path.exists(zscores_fp)
+        self.zscores = pd.read_csv(zscores_fp, index_col=0)
 
         # Group the replicates by sample
         self.sample_table = self.group_replicates()
@@ -88,7 +86,7 @@ class AggregatePhIP:
         self.organism_table = self.group_organisms()
 
         # Save to CSV
-        self.organism_table.to_csv("organism.csv.gz", index=None)
+        self.organism_table.to_csv("organism.summary.csv.gz", index=None)
 
     def setup_logging(self) -> logging.Logger:
         """Set up logging."""
@@ -111,14 +109,17 @@ class AggregatePhIP:
         """Read a mapping of replicates to samples."""
 
         # The user must specify a CSV containing the sample mapping
-        df = pd.read_csv("inputs/2022-04-20-phip-flow-samples.csv", index_col=0)
-        # FIXME
+        sample_mapping_fp = "${params.dataset_prefix}_sample_annotation_table.csv"
+        self.logger.info(f"Reading in sample mapping from: {sample_mapping_fp}")
+        assert os.path.exists(sample_mapping_fp)
+
+        # Read in the table
+        df = pd.read_csv(sample_mapping_fp, index_col=0)
         self.logger.info(f"Sample mapping table has {df.shape[0]:,} rows and {df.shape[1]:,} columns")
 
         # The user must specify the column used to group replicates
         # from the same sample
-        sample_grouping_col = "sample_name"
-        # FIXME        
+        sample_grouping_col = "${params.sample_grouping_col}"
 
         msg = f"Column '{sample_grouping_col}' not found ({', '.join(df.columns.values)})"
         assert sample_grouping_col in df.columns.values, msg
@@ -129,8 +130,12 @@ class AggregatePhIP:
     def read_peptide_mapping(self) -> pd.DataFrame:
         """Read the table mapping peptides (by ID) to organism, protein, and start position ('pos')."""
 
-        df = pd.read_csv("inputs/wide_data/phip-flow-test_peptide_annotation_table.csv", index_col=0)
-        # FIXME
+        peptide_mapping_fp = "${params.dataset_prefix}_peptide_annotation_table.csv"
+        self.logger.info(f"Reading in peptide mappings from: {peptide_mapping_fp}")
+        assert os.path.exists(peptide_mapping_fp)
+
+        # Read in the table
+        df = pd.read_csv(peptide_mapping_fp, index_col=0)
         self.logger.info(f"Peptide mapping table has {df.shape[0]:,} rows and {df.shape[1]:,} columns")
 
         # Map the user-provided names to controlled values
@@ -144,7 +149,6 @@ class AggregatePhIP:
             # And by the protein sequence (which corresponds to the public epitope sequences)
             "${params.peptide_seq_col}": "seq"
         }
-        # FIXME
 
         # For each of the user-provided columns
         for cname in mapping.keys():
@@ -182,7 +186,7 @@ class AggregatePhIP:
         """Read the list of public epitopes provided."""
 
         # Table of public epitopes
-        df = pd.read_csv("inputs/public_epitopes_clean.csv")  # FIXME
+        df = pd.read_csv("${public_epitopes_csv}")
         self.logger.info(f"Public epitope table has {df.shape[0]:,} rows")
 
         # The user must specify the column which contains the public epitopes
@@ -237,7 +241,7 @@ class AggregatePhIP:
 
         return df
 
-    def group_peptides_replicates(self, df):
+    def group_peptides_replicates(self, df) -> pd.DataFrame:
 
         # Get the vector of whether each replicate is above the z-score threshold
         hit_vec = df["zscore"] > self.zscore_threshold
@@ -260,7 +264,7 @@ class AggregatePhIP:
             ]
         )
 
-    def group_organisms(self):
+    def group_organisms(self) -> pd.DataFrame:
         """Group together the results by organism."""
 
         # Analyze each organism independently
@@ -279,7 +283,7 @@ class AggregatePhIP:
 
         return df
 
-    def group_sample_organisms(self, df):
+    def group_sample_organisms(self, df:pd.DataFrame) -> pd.DataFrame:
         """Analyze the data for a single sample, single organism."""
 
         # Add the protein and position labels

@@ -26,7 +26,7 @@ process aggregate_organisms {
         tuple path("*"), val(sample_id)
         // Any public epitopes defined in CSV format
         path public_epitopes_csv
-    output: path "*.csv"
+    output: path "*.csv.gz"
     when: params.summarize_by_organism
     shell:
     template "aggregate_organisms.py"
@@ -35,7 +35,7 @@ process aggregate_organisms {
 process join_organisms {
     publishDir "$params.results/aggregated_data/", mode: 'copy', overwrite: true
     input: path "input/"
-    output: path "*.csv"
+    output: path "*.csv.gz"
     when: params.summarize_by_organism
     shell:
     """#!/usr/bin/env python3

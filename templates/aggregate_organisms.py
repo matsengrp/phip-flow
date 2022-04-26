@@ -81,14 +81,17 @@ class AggregatePhIP:
         self.sample_table = self.group_replicates()
 
         # Save to CSV
-        self.sample_table.to_csv("${sample_id}.peptide.ebs.csv.gz", index=None)
+        self.sample_table.to_csv("!{sample_id}.peptide.ebs.csv.gz", index=None)
 
         # Group the peptides by organism
         self.logger.info("Grouping peptides by organism")
         self.organism_table = self.group_organisms()
 
         # Save to CSV
-        self.organism_table.to_csv("${sample_id}.organism.summary.csv.gz", index=None)
+        self.logger.info("Writing organism-level outputs to CSV")
+        self.organism_table.to_csv("!{sample_id}.organism.summary.csv.gz", index=None)
+        
+        self.logger.info("Done")
 
     def setup_logging(self) -> logging.Logger:
         """Set up logging."""
@@ -207,34 +210,30 @@ class AggregatePhIP:
     def group_replicates(self) -> pd.DataFrame:
         """Group together the replicates of the same sample."""
 
-        # Make a long table and add the sample designation
-        df = self.zscores.reset_index(
-        ).melt(
-            id_vars=["index"]
+        # Get the replicates which should be combined for this sample
+        replicates = [
+            rep_i
+            for rep_i in self.zscores.columns.values
+            if self.sample_mapping.get(int(rep_i)) == '!{sample_id}'
+        ]
+
+        self.logger.info(f"Filtering down to the {len(replicates):,} replicates for sample '!{sample_id}'")
+        assert len(replicates) > 0
+
+        # Take a slice of the table
+        df = self.zscores.reindex(columns=replicates)
+
+        # Add summary metrics
+        df = df.assign(
+            n_replicates=len(replicates),
+            EBS=df.mean(axis=1),
+            hit=df.apply(self.classify_hit, axis=1),
+            sample='!{sample_id}'
+        ).reset_index(
         ).rename(
-            columns=dict(
-                index="peptide",
-                variable="replicate",
-                value="zscore"
-            )
-        ).assign(
-            sample=lambda d: d["replicate"].apply(int).apply(self.sample_mapping.get)
-        ).query(
-            # Filter to just the single sample used for this shard
-            "sample == '!{sample_id}'"
+            columns=dict(index="peptide")
         )
 
-        self.logger.info(f"Filtered to {df.shape[0]:,} data points for the sample !{sample_id}")
-
-        # Make sure that we have sample labels for everything
-        assert not df["sample"].isnull().any(), "Could not find sample labels for all replicates"
-
-        # For each peptide, for each sample, calculate the summary metrics
-        df = pd.concat([
-            self.group_peptides_replicates(d, sample, peptide)
-            for (sample, peptide), d in df.groupby(["sample", "peptide"])
-        ])
-        
         # Mark whether each peptide is public
         df = df.assign(
             public=df["peptide"].apply(int).apply(
@@ -244,38 +243,27 @@ class AggregatePhIP:
 
         return df
 
-    def group_peptides_replicates(self, df:pd.DataFrame, sample:str, peptide:str) -> pd.DataFrame:
+    def classify_hit(self, r):
+        """Determine whether a peptide is a hit, or discordant."""
 
         # Get the vector of whether each replicate is above the z-score threshold
-        hit_vec = df["zscore"] > self.zscore_threshold
+        hit_vec = r > self.zscore_threshold
 
         # Determine the hit type
         if hit_vec.all():
-            hit = "TRUE"
+            return "TRUE"
         elif not hit_vec.any():
-            hit = "FALSE"
+            return "FALSE"
         else:
-            hit = "DISCORDANT"
-
-        return pd.DataFrame(
-            [
-                dict(
-                    n_replicates=df.shape[0],
-                    EBS=df["zscore"].mean(),
-                    hit=hit,
-                    sample=sample,
-                    peptide=peptide
-                )
-            ]
-        )
+            return "DISCORDANT"
 
     def group_organisms(self) -> pd.DataFrame:
         """Group together the results by organism."""
 
         # Analyze each organism independently
         df = pd.concat([
-            self.group_sample_organisms(df, sample, organism)
-            for (sample, organism), df in self.sample_table.assign(
+            self.group_sample_organisms(d, sample, organism)
+            for (sample, organism), d in self.sample_table.assign(
                 organism=lambda d: d["peptide"].apply(
                     self.peptide_mapping["organism"].get
                 )
@@ -334,7 +322,7 @@ class AggregatePhIP:
         df = df.drop(index=to_drop)
 
         # Return the number of hits, etc. for all and just public epitopes
-        return pd.DataFrame([{
+        dat = pd.DataFrame([{
             "sample": sample,
             "organism": organism,
             **{
@@ -352,6 +340,8 @@ class AggregatePhIP:
                 ]
             }
         }])
+
+        return dat
 
 
 AggregatePhIP()

@@ -77,7 +77,10 @@ workflow AGG {
     )
 
     join_organisms(
-        aggregate_organisms.out.toSortedList()
+        aggregate_organisms
+            .out
+            .flatten()
+            .toSortedList()
     )
 }
 

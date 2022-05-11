@@ -58,10 +58,6 @@ class AggregatePhIP:
         # Mapping peptides to organisms
         self.peptide_mapping = self.read_peptide_mapping()
 
-        # The user must specify the length of each peptide
-        self.peptide_length = int("!{params.peptide_length}")
-        self.logger.info(f"Peptide length: {self.peptide_length}")
-
         # The user must specify the maximum overlap
         self.max_overlap = int("!{params.max_overlap}")
         self.logger.info(f"Maximum overlap: {self.max_overlap}")
@@ -180,8 +176,10 @@ class AggregatePhIP:
 
         self.logger.info(f"Public Epitopes: {df['public'].sum():,} / {df.shape[0]:,}")
 
-        # Drop the sequence
-        df = df.drop(
+        # Drop the sequence, but keep the length of the peptide
+        df = df.assign(
+            peptide_length=lambda d: d["seq"].apply(len)
+        ).drop(
             columns=["seq"]
         )
 
@@ -279,13 +277,16 @@ class AggregatePhIP:
     def group_sample_organisms(self, df:pd.DataFrame, sample:str, organism:str) -> pd.DataFrame:
         """Analyze the data for a single sample, single organism."""
 
-        # Add the protein and position labels
+        # Add the protein, position, and length information for each peptide
         df = df.assign(
             protein=df["peptide"].apply(
                 self.peptide_mapping["protein"].get,
             ),
             position=df["peptide"].apply(
                 self.peptide_mapping["position"].get,
+            ),
+            peptide_length=df["peptide"].apply(
+                self.peptide_mapping["peptide_length"].get,
             )
         )
 
@@ -302,7 +303,7 @@ class AggregatePhIP:
         for i, r in df.iterrows():
 
             # Get the positions covered by this peptide
-            row_pos = set(range(r["position"], r["position"] + self.peptide_length))
+            row_pos = set(range(r["position"], r["position"] + r["peptide_length"]))
 
             # Get the number of overlapping positions
             n_overlap = len(covered_positions[r["protein"]] & row_pos)

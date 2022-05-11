@@ -102,11 +102,6 @@
             "wb_type": "string",
             "default": "Prot"
         },
-        "peptide_length": {
-            "help": "Length of each peptide in the library",
-            "wb_type": "integer",
-            "default": "56"
-        },
         "max_overlap": {
             "help": "Maximum allowed overlap between detected peptides",
             "wb_type": "integer",

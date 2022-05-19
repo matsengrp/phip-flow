@@ -230,6 +230,8 @@ class AggregatePhIP:
         ).reset_index(
         ).rename(
             columns=dict(index="peptide")
+        ).drop(
+            columns=replicates
         )
 
         # Mark whether each peptide is public

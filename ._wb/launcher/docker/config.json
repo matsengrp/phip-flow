@@ -1,0 +1,24 @@
+{
+    "name": "Run phip-flow locally (requires Docker)",
+    "description": "Configure Nextflow to run with Docker enabled",
+    "args": {
+        "work_dir": {
+            "help": "Working directory used for temporary files",
+            "wb_env": "WORK_DIR",
+            "wb_type": "folder",
+            "default": "work"
+        },
+        "cache_dir": {
+            "help": "Cache directory for Singularity images (if needed)",
+            "wb_env": "CACHE_DIR",
+            "wb_type": "folder",
+            "default": "cache_dir"
+        },
+        "nxf_ver": {
+            "help": "Nextflow Version",
+            "wb_env": "NXF_VER",
+            "wb_type": "string",
+            "default": "21.10.6"
+        }
+    }
+}

@@ -1,7 +1,7 @@
-sample_id,library_batch,control_status,participant_ID,patient_status,fastq_filepath
-0,MEGSUB,library,NA,NA,data/pan-cov-example/NGS/20-05-15-cov2-ex4b/4B-rep1-27-library_S26_L001_R1_001_sub.fastq.gz
-1,SUB2,library,NA,NA,data/pan-cov-example/NGS/20-05-14-cov2-ex4a/4A-rep1-27-library_S27_L001_R1_001_sub.fastq.gz
-2,MEGSUB,empirical,6C,conv outpatient 30d,data/pan-cov-example/NGS/20-05-27-cov2-ex5a/rep1-15_S15_L001_R1_001.fastq.gz
-3,SUB2,empirical,6C,conv outpatient 30d,data/pan-cov-example/NGS/20-06-02-cov2-ex5b/ex5b-rep1-15_S15_L001_R1_001.fastq.gz
-4,MEGSUB,empirical,1a,healthy adult,data/pan-cov-example/NGS/20-05-15-cov2-ex4b/4B-rep1-18_S18_L001_R1_001.fastq.gz
-5,SUB2,empirical,1a,healthy adult,data/pan-cov-example/NGS/20-05-14-cov2-ex4a/4A-rep2-18_S45_L001_R1_001.fastq.gz
+library_batch,control_status,participant_ID,patient_status,fastq_filepath
+MEGSUB,beads_only,NA,NA,data/pan-cov-example/NGS/20-05-15-cov2-ex4b/4B-rep1-27-library_S26_L001_R1_001_sub.fastq.gz
+SUB2,beads_only,NA,NA,data/pan-cov-example/NGS/20-05-14-cov2-ex4a/4A-rep1-27-library_S27_L001_R1_001_sub.fastq.gz
+MEGSUB,empirical,6C,conv outpatient 30d,data/pan-cov-example/NGS/20-05-27-cov2-ex5a/rep1-15_S15_L001_R1_001.fastq.gz
+SUB2,empirical,6C,conv outpatient 30d,data/pan-cov-example/NGS/20-06-02-cov2-ex5b/ex5b-rep1-15_S15_L001_R1_001.fastq.gz
+MEGSUB,empirical,1a,healthy adult,data/pan-cov-example/NGS/20-05-15-cov2-ex4b/4B-rep1-18_S18_L001_R1_001.fastq.gz
+SUB2,empirical,1a,healthy adult,data/pan-cov-example/NGS/20-05-14-cov2-ex4a/4A-rep2-18_S45_L001_R1_001.fastq.gz

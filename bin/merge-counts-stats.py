@@ -5,7 +5,7 @@
 import pandas as pd
 import numpy as np
 import phippery
-import phippery.phipdata as phipdata
+from phippery.utils import *
 import argparse
 import glob
 import os
@@ -32,11 +32,6 @@ def merge_count_data(counts):
     to raw peptide enrichment counts for each sample
     """
 
-    # TODO ADD CHECKS
-    # WE NEED TO MAKE SURE EACH FOLLOWS A CERTAIN FORMAT
-    
-    # TODO remove prune from the name.
-    # TODO shouldn't the index name be peptide id if we want to be consistant?
     load = lambda path, sample: pd.read_csv(  # noqa
         path, index_col=0, sep="\t", names=["peptide_id", sample]
     )
@@ -45,7 +40,6 @@ def merge_count_data(counts):
         load(path, int(os.path.basename(path).split(".")[0])) for path in counts
     ]
 
-    # TODO do we really need to fill na with 0?
     merged_counts_df = reduce(
         lambda l, r: pd.merge(l, r, how="outer", left_index=True, right_index=True),
         sample_dataframes,
@@ -72,13 +66,12 @@ def load_from_counts_tsv(
     and produce a properly formatted xarray dataset.
     """
 
-    # TODO assert th
     counts = [f for f in glob.glob(counts_file_pattern)]
     stats_files = [f for f in glob.glob(stats_file_pattern)]
 
     merged_counts = merge_count_data(counts)
-    peptide_table = phipdata.collect_peptide_table(peptide_table)
-    sample_table = phipdata.collect_sample_table(sample_table)
+    peptide_table = collect_peptide_table(peptide_table)
+    sample_table = collect_sample_table(sample_table)
 
     def num(s):
         try:
@@ -106,13 +99,13 @@ def load_from_counts_tsv(
             right_index=True
     )
 
-    ds = phipdata.stitch_dataset(
+    ds = stitch_dataset(
         counts=merged_counts, 
         peptide_table=peptide_table, 
         sample_table=sample_table,
     )
 
-    phipdata.dump(ds, output)
+    dump(ds, output)
 
 load_from_counts_tsv(
     args.st,

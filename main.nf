@@ -51,7 +51,8 @@ nextflow.enable.dsl=2
 include { ALIGN } from './workflows/alignment.nf'
 include { STATS } from './workflows/statistics.nf'
 include { DSOUT } from './workflows/output.nf'
+include { AGG } from './workflows/aggregate.nf'
 
 workflow {
-    ALIGN | STATS | DSOUT
+    ALIGN | STATS | DSOUT | AGG
 }

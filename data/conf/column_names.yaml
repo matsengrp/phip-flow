@@ -24,13 +24,6 @@ dimensions:
 
   sample:
 
-    id:
-      column_name: "sample_id"
-      description: "The interger identifier for a given sample"
-      pandas_type: pd.Int64Dtype
-      required_for:
-        - alignment-counts-workflow
-
     fastq:
       column_name: "fastq_filename"
       description: "The filepath leading to the fastq file for a specific file"

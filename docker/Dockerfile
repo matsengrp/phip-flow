@@ -1,7 +1,7 @@
 FROM quay.io/hdc-workflows/ubuntu:20.04
 
 LABEL maintainer "Jared Galloway <jgallowa@fredhutch.rg>" \
-      version "1.0" \
+      version "1.3" \
       description "Common PhIP-Seq Workflows"
 
 # install needed tools
@@ -19,7 +19,8 @@ RUN apt-get update --fix-missing -qq && \
     python3 \
     python3-pip \ 
     python3-venv \
-    zip
+    zip \
+    wget
 
 ENV VIRTUAL_ENV=/opt/venv
 RUN python3 -m venv $VIRTUAL_ENV

@@ -63,20 +63,29 @@ process cpm_fold_enrichment {
     """
 }
 
-// compute fold enrichment on a single .phip file
-//process differential_selection {
-//    // label "phip_dev"
-//    // conda = '/home/jared/miniconda3/envs/phip_seq/'
-//    input:
-//    path phip_data
-//    output:
-//    path "diff_sel.phip"
-//    when: params.run_diff_sel_workflow
-//    shell:
-//    """
-//    cp ${phip_data} diff_sel.phip
-//    """
-//}
+process fit_predict_neg_binom {
+    input: path phip_data
+    output: path "fit_predict_neg_binom.phip"
+    when: params.run_neg_binom_fit_predict
+    shell:
+    """
+    fit-predict-neg-binom.py \
+        -ds ${phip_data} \
+        -o fit_predict_neg_binom.phip 
+    """
+}
+
+process fit_predict_zscore {
+    input: path phip_data
+    output: path "fit_predict_zscore.phip"
+    when: params.run_zscore_fit_predict
+    shell:
+    """
+    fit-predict-zscore.py \
+        -ds ${phip_data} \
+        -o fit_predict_zscore.phip 
+    """
+}
 
 
 /*
@@ -109,14 +118,15 @@ workflow STATS {
 
     // run some optional statistics which
     // depend on certain annotations
-    cpm_fold_enrichment(counts_per_million.out) | set { cpm_fold_enr }
-
-    // TODO diff sel
-    // TODO neg binom
+    cpm_fold_enrichment(counts_per_million.out) | set { cpm_fold_enr_ch }
+    fit_predict_neg_binom(size_factors.out) | set { fit_pred_neg_binom_ch }
+    fit_predict_zscore(counts_per_million.out) | set { fit_pred_zscore_ch }
 
     // collect all the datasets statistics and merge
     auto_stats_ch.concat(
-        cpm_fold_enr
+        cpm_fold_enr_ch,
+        fit_pred_neg_binom_ch,
+        fit_pred_zscore_ch
     ) | collect | merge_binary_datasets
 
     emit:

@@ -22,9 +22,6 @@ please see the overview by Kevin Sung found at
 https://matsengrp.github.io/phippery/bkg-model.html 
 """
 
-#import phippery
-#import phippery.modeling as modeling
-#import phippery.utils as utils
 from phippery.modeling import neg_binom_model
 from phippery.utils import *
 
@@ -37,17 +34,15 @@ parser.add_argument("-o", type=str)
 args = parser.parse_args()
 
 ds = load(args.ds)
-
-# grab the relevant mock ip samples id's
-#beads_ids = sample_id_coordinate_from_query(
-#        ds, ["control_status == 'beads_only'"]
-#)
-#
-#beads_ds = ds.loc[dict(sample_id=beads_ids)]
 beads_ds = ds_query(ds, "control_status == 'beads_only'")
 
 if len(beads_ds.sample_id) <= 50:
-    warnings.warn("With less that 50 beads_only samples, it's probably that many peptide distributions fits will not converge, esspecially if coverage is low. See https://matsengrp.github.io/phippery/bkg-model.html for more.")
+    warnings.warn(
+    "With less that 50 beads_only samples, "
+    "it's probably that many peptide distributions fits "
+    "will not converge, esspecially if coverage is low. "
+    "See https://matsengrp.github.io/phippery/bkg-model.html for more."
+    )
 
 params, fit_ds = neg_binom_model(
     ds,

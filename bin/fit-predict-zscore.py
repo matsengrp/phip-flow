@@ -32,7 +32,6 @@ parser.add_argument("-o", type=str)
 args = parser.parse_args()
 
 ds = load(args.ds)
-
 beads_ds = ds_query(ds, "control_status == 'beads_only'")
 
 zscore_ds = zscore(

@@ -29,7 +29,6 @@ process counts_per_million {
     dump(ds, "cpm.phip")
     """
 }
-// phippery cpm -o cpm.phip ${phip_data} 
 
 process size_factors {
     input: path phip_data
@@ -46,20 +45,6 @@ process size_factors {
     dump(ds, "sf.phip") 
     """
 }
-//phippery size-factors -o sf.phip ${phip_data} 
-
-// TODO
-//process rank_counts {
-//    input:
-//    path phip_data
-//    output:
-//    path "rank.phip"
-//    shell:
-//    """
-//    phippery rank -o rank.phip !{phip_data} 
-//    """
-//}
-
 
 /*
 OPTIONALLY RUN STATISTICS
@@ -84,9 +69,6 @@ process cpm_fold_enrichment {
     dump(ds, "fold_enr.phip") 
     """
 }
-//phippery query-expression "control_status=='library'" \
-//    -o lib.phip ${phip_data}
-//phippery fold-enrichment -dt "cpm" -o fold_enr.phip lib.phip ${phip_data}
 
 process fit_predict_neg_binom {
     input: path phip_data

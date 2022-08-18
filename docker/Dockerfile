@@ -28,9 +28,8 @@ ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # install phippery
 RUN git clone https://github.com/matsengrp/phippery.git \
-    && (cd phippery && pip install .)
-#RUN pip install git+https://github.com/matsengrp/phippery.git@8c6491984aca4a252cb69f14cd2bfead6f37f86d
-
+    && (cd phippery && git checkout 53addc46b6d03632c153efba36cf6e7183565829 \
+     && pip install .)
 
 # install pre-build binary Bowtie1.3
 #RUN curl 'https://iweb.dl.sourceforge.net/project/bowtie-bio/bowtie/1.3.1/bowtie-1.3.1-linux-x86_64.zip' \

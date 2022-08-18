@@ -20,8 +20,7 @@ please see the overview by Kevin Sung found at
 https://matsengrp.github.io/phippery/
 """
 
-import phippery
-import phippery.utils as utils
+from phippery.utils import * 
 from phippery.modeling import zscore
 
 import argparse
@@ -32,24 +31,19 @@ parser.add_argument("-ds", type=str)
 parser.add_argument("-o", type=str)
 args = parser.parse_args()
 
-ds = phippery.load(args.ds)
+ds = load(args.ds)
 
-# grab the relevant mock ip samples id's
-beads_ids = utils.sample_id_coordinate_from_query(
-        ds, ["control_status == 'beads_only'"]
-)
-
-beads_ds = ds.loc[dict(sample_id=beads_ids)]
+beads_ds = ds_query(ds, "control_status == 'beads_only'")
 
 zscore_ds = zscore(
     ds,
-    beads_ds,                   # dataset of beads-only samples
-    data_table='cpm',           # peptide quantity for performing binning and computing z-scores
-    min_Npeptides_per_bin=300,  # mininum number of peptides per bin
-    lower_quantile_limit=0.05,  # counts below this quantile are ignored for computing mean, stddev
-    upper_quantile_limit=0.95,  # counts above this quantile are igonred for computing mean, stddev
+    beads_ds,
+    data_table='cpm',
+    min_Npeptides_per_bin=300,
+    lower_quantile_limit=0.05,
+    upper_quantile_limit=0.95,
     inplace=False,
     new_table_name='zscore'
 )
 
-phippery.dump(zscore_ds, args.o)
+dump(zscore_ds, args.o)

@@ -65,7 +65,7 @@ process cpm_fold_enrichment {
     
     ds = load("$phip_data")
     lib_ds = ds_query(ds, "control_status == 'library'")
-    enrichment(ds, ds_lib, data_table="cpm")
+    enrichment(ds, lib_ds, data_table="cpm")
     dump(ds, "fold_enr.phip") 
     """
 }

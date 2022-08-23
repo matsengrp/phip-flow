@@ -109,7 +109,6 @@ process collect_phip_data {
         -sfp "*.stats" \
         -o data.phip
     """
-    //template "collect_phip_data.sh"
 }
 
 process replicate_counts {

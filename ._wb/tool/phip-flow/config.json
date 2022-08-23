@@ -12,10 +12,25 @@
             "wb_type": "folder",
             "required": true
         },
+        "read_length": {
+            "help": "Read length for alignment",
+            "wb_type": "integer",
+            "default": "125"
+        },
+        "fastq_stream_func": {
+            "help": "Set this as 'cat' if fastq files not g'zipped",
+            "wb_type": "string",
+            "default": "zcat"
+        },
         "peptide_table": {
             "help": "Table describing each peptide in the library, minimally containing the column 'oligo' with the sequence used for each peptide",
             "wb_type": "file",
             "required": true
+        },
+        "peptide_tile_length": {
+            "help": "Peptide length for alignment",
+            "wb_type": "integer",
+            "default": "117"
         },
         "dataset_prefix": {
             "help": "String which is prepended to all output files",
@@ -36,16 +51,6 @@
             "help": "Generate output files in wide CSV format",
             "wb_type": "bool",
             "default": true
-        },
-        "read_length": {
-            "help": "Read length for alignment",
-            "wb_type": "integer",
-            "default": "125"
-        },
-        "peptide_tile_length": {
-            "help": "Peptide length for alignment",
-            "wb_type": "integer",
-            "default": "117"
         },
         "n_mismatches": {
             "help": "Number of mismatches allowed",
@@ -125,11 +130,6 @@
             "help": "In the public epitopes CSV, the column containing the translated amino acid sequence",
             "wb_type": "string",
             "default": "peptide_translate"
-        },
-        "fastq_stream_func": {
-            "help": "Set this as 'cat' if fastq files not g'zipped",
-            "wb_type": "string",
-            "default": "zcat"
         },
         "nxf_profile": {
             "help": "Profile used for resource allocation (options: standard / docker / cluster)",

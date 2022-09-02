@@ -22,9 +22,8 @@ please see the overview by Kevin Sung found at
 https://matsengrp.github.io/phippery/bkg-model.html 
 """
 
-import phippery
-import phippery.modeling as modeling
-import phippery.utils as utils
+from phippery.modeling import neg_binom_model
+from phippery.utils import *
 
 import argparse
 import warnings
@@ -34,18 +33,18 @@ parser.add_argument("-ds", type=str)
 parser.add_argument("-o", type=str)
 args = parser.parse_args()
 
-ds = phippery.load(args.ds)
+ds = load(args.ds)
+beads_ds = ds_query(ds, "control_status == 'beads_only'")
 
-# grab the relevant mock ip samples id's
-beads_ids = utils.sample_id_coordinate_from_query(
-        ds, ["control_status == 'beads_only'"]
-)
-if len(beads_ids) <= 50:
-    warnings.warn("With less that 50 beads_only samples, it's probably that many peptide distributions fits will not converge, esspecially if coverage is low. See https://matsengrp.github.io/phippery/bkg-model.html for more.")
+if len(beads_ds.sample_id) <= 50:
+    warnings.warn(
+    "With less that 50 beads_only samples, "
+    "it's probably that many peptide distributions fits "
+    "will not converge, esspecially if coverage is low. "
+    "See https://matsengrp.github.io/phippery/bkg-model.html for more."
+    )
 
-beads_ds = ds.loc[dict(sample_id=beads_ids)]
-
-params, fit_ds = modeling.neg_binom_model(
+params, fit_ds = neg_binom_model(
     ds,
     beads_ds,
     nb_p=2,
@@ -56,4 +55,4 @@ params, fit_ds = modeling.neg_binom_model(
     new_table_name="neg_binom_mlxp",
 )
 
-phippery.dump(fit_ds, args.o)
+dump(fit_ds, args.o)

@@ -1,7 +1,7 @@
 FROM quay.io/hdc-workflows/ubuntu:20.04
 
 LABEL maintainer "Jared Galloway <jgallowa@fredhutch.rg>" \
-      version "1.3" \
+      version "1.4" \
       description "Common PhIP-Seq Workflows"
 
 # install needed tools
@@ -27,12 +27,13 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # install phippery
+# RUN python -m pip install git+https://github.com/matsengrp/phippery.git@53addc46b6d03632c153efba36cf6e7183565829
 RUN git clone https://github.com/matsengrp/phippery.git \
-    && (cd phippery && pip install .)
-
+    && (cd phippery && git checkout 53addc46b6d03632c153efba36cf6e7183565829 \
+     && pip install .)
 
 # install pre-build binary Bowtie1.3
-RUN curl 'https://iweb.dl.sourceforge.net/project/bowtie-bio/bowtie/1.3.1/bowtie-1.3.1-linux-x86_64.zip' \
+RUN curl -fksSL https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.3.1/bowtie-1.3.1-linux-x86_64.zip \
     --output bowtie-1.3.1-linux-x86_64.zip \
     && unzip bowtie-1.3.1-linux-x86_64.zip \
     && (cd /usr/bin/ && ln -s /bowtie-1.3.1-linux-x86_64/* ./)

@@ -19,7 +19,14 @@ process counts_per_million {
     output: path "cpm.phip"
     shell:
     """
-    phippery cpm -o cpm.phip ${phip_data} 
+    #!/usr/bin/env python3
+
+    from phippery.normalize import counts_per_million
+    from phippery.utils import *
+    
+    ds = load("$phip_data")
+    counts_per_million(ds)
+    dump(ds, "cpm.phip")
     """
 }
 
@@ -28,22 +35,16 @@ process size_factors {
     output: path "sf.phip"
     shell:
     """
-    phippery size-factors -o sf.phip ${phip_data} 
+    #!/usr/bin/env python3
+
+    from phippery.normalize import size_factors
+    from phippery.utils import *
+    
+    ds = load("$phip_data")
+    size_factors(ds)
+    dump(ds, "sf.phip") 
     """
 }
-
-// TODO
-//process rank_counts {
-//    input:
-//    path phip_data
-//    output:
-//    path "rank.phip"
-//    shell:
-//    """
-//    phippery rank -o rank.phip !{phip_data} 
-//    """
-//}
-
 
 /*
 OPTIONALLY RUN STATISTICS
@@ -57,9 +58,15 @@ process cpm_fold_enrichment {
     when: params.run_cpm_enr_workflow
     shell:
     """
-    phippery query-expression "control_status=='library'" \
-        -o lib.phip ${phip_data}
-    phippery fold-enrichment -dt "cpm" -o fold_enr.phip lib.phip ${phip_data}
+    #!/usr/bin/env python3
+
+    from phippery.normalize import enrichment
+    from phippery.utils import *
+    
+    ds = load("$phip_data")
+    lib_ds = ds_query(ds, "control_status == 'library'")
+    enrichment(ds, lib_ds, data_table="cpm")
+    dump(ds, "fold_enr.phip") 
     """
 }
 

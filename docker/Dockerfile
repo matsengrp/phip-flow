@@ -27,10 +27,7 @@ RUN python3 -m venv $VIRTUAL_ENV
 ENV PATH="$VIRTUAL_ENV/bin:$PATH"
 
 # install phippery
-# RUN python -m pip install git+https://github.com/matsengrp/phippery.git@53addc46b6d03632c153efba36cf6e7183565829
-RUN git clone https://github.com/matsengrp/phippery.git \
-    && (cd phippery && git checkout 53addc46b6d03632c153efba36cf6e7183565829 \
-     && pip install .)
+RUN pip install phippery==1.0.6 
 
 # install pre-build binary Bowtie1.3
 RUN curl -fksSL https://sourceforge.net/projects/bowtie-bio/files/bowtie/1.3.1/bowtie-1.3.1-linux-x86_64.zip \

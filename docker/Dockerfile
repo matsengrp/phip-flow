@@ -1,5 +1,8 @@
 FROM quay.io/hdc-workflows/ubuntu:20.04
 
+# bust cache
+ADD http://date.jsontest.com /etc/builddate
+
 LABEL maintainer "Jared Galloway <jgallowa@fredhutch.rg>" \
       version "1.4" \
       description "Common PhIP-Seq Workflows"

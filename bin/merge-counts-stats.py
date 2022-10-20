@@ -65,6 +65,20 @@ def load_from_counts_tsv(
     peptide_table = _collect_peptide_table(peptide_table)
     sample_table = _collect_sample_table(sample_table)
 
+    # For testing FIXME
+    print(merged_counts)
+    print(sample_table)
+    
+    # Add more summary metrics per sample
+    sample_table = sample_table.assign(
+        percent_mapped=sample_table["reads_mapped"] / sample_table["raw_total_sequences"] * 100.,
+        percent_peptides_detected=(merged_counts > 0).mean() * 100.,
+        percent_peptides_between_10_and_100=merged_counts.applymap(lambda v: v >= 10 & v <= 100).mean() * 100.,
+    )
+    
+    # For testing FIXME
+    print(sample_table)
+
     def num(s):
         try:
             return int(s)

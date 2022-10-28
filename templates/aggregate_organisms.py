@@ -282,6 +282,8 @@ class AggregatePhIP:
         df = df.assign(
             seq=df["peptide"].apply(
                 self.peptide_mapping["seq"].get
+            ).apply(
+                lambda s: s.rstrip("*")
             )
         )
 

@@ -18,7 +18,7 @@ process dump_wide_csv {
     publishDir "$params.results/wide_data/", mode: 'copy', overwrite: true
     input: path phip_data
     output: path "*.csv"
-    when: params.output_wide_csv
+    when: params.output_wide_csv || params.summarize_by_organism
     shell:
     """
     phippery to-wide-csv -o $params.dataset_prefix $phip_data

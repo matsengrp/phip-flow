@@ -175,11 +175,9 @@ class AggregatePhIP:
 
         self.logger.info(f"Public Epitopes: {df['public'].sum():,} / {df.shape[0]:,}")
 
-        # Drop the sequence, but keep the length of the peptide
+        # Add the length of the peptide
         df = df.assign(
             peptide_length=lambda d: d["seq"].apply(len)
-        ).drop(
-            columns=["seq"]
         )
 
         return df

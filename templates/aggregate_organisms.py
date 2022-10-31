@@ -21,7 +21,10 @@ import logging
 #   Public: marked as TRUE if the epitope was included in the input list of public epitopes
  
 # 3. To combine the virus-level data for each sample, only keep the highest-scoring
-# set of epitopes which do not overlap with any other epitope by more than 7aa
+# set of epitopes which do not overlap with any other epitope by more than 7aa.
+# To identify overlaps, use an exact alignment approach using k-mers. Note that this
+# will count two peptides as overlapping if they share any 7aa sequence, without
+# performing global alignment.
 
 # 4. Finally, save a table with the following information per virus, per sample:
 #   Number of all epitope hits
@@ -143,10 +146,6 @@ class AggregatePhIP:
         mapping = {
             # The user must specify the column used to group peptides by organism
             "!{params.peptide_org_col}": "organism",
-            # By protein name
-            "!{params.peptide_prot_col}": "protein",
-            # By the starting position of the peptide within the protein
-            "!{params.peptide_pos_col}": "position",
             # And by the protein sequence (which corresponds to the public epitope sequences)
             "!{params.peptide_seq_col}": "seq"
         }
@@ -176,11 +175,9 @@ class AggregatePhIP:
 
         self.logger.info(f"Public Epitopes: {df['public'].sum():,} / {df.shape[0]:,}")
 
-        # Drop the sequence, but keep the length of the peptide
+        # Add the length of the peptide
         df = df.assign(
             peptide_length=lambda d: d["seq"].apply(len)
-        ).drop(
-            columns=["seq"]
         )
 
         return df
@@ -279,24 +276,20 @@ class AggregatePhIP:
     def group_sample_organisms(self, df:pd.DataFrame, sample:str, organism:str) -> pd.DataFrame:
         """Analyze the data for a single sample, single organism."""
 
-        # Add the protein, position, and length information for each peptide
+        # Add the sequence information for each peptide
         df = df.assign(
-            protein=df["peptide"].apply(
-                self.peptide_mapping["protein"].get,
-            ),
-            position=df["peptide"].apply(
-                self.peptide_mapping["position"].get,
-            ),
-            peptide_length=df["peptide"].apply(
-                self.peptide_mapping["peptide_length"].get,
+            seq=df["peptide"].apply(
+                self.peptide_mapping["seq"].get
+            ).apply(
+                lambda s: s.rstrip("*")
             )
         )
 
         # Sort by EBS (descending)
         df = df.sort_values(by="EBS", ascending=False)
 
-        # Keep track of which positions have been covered
-        covered_positions = defaultdict(set)
+        # Keep track of the peptide kmers which have been observed so far
+        kmers_seen = set()
 
         # Make a list of the indices which will be dropped
         to_drop = list()
@@ -304,14 +297,14 @@ class AggregatePhIP:
         # Go down the list, starting with the tightest binders
         for i, r in df.iterrows():
 
-            # Get the positions covered by this peptide
-            row_pos = set(range(r["position"], r["position"] + r["peptide_length"]))
+            # Get the kmers by this peptide
+            row_kmers = set([
+                r["seq"][n:(n + self.max_overlap)]
+                for n in range(len(r["seq"]) - self.max_overlap)
+            ])
 
-            # Get the number of overlapping positions
-            n_overlap = len(covered_positions[r["protein"]] & row_pos)
-
-            # If the maximum overlap threshold is exceeded
-            if n_overlap >= self.max_overlap:
+            # If any of those kmers have been seen before
+            if len(row_kmers & kmers_seen) > 0:
 
                 # Drop the row
                 to_drop.append(i)
@@ -320,7 +313,7 @@ class AggregatePhIP:
             else:
 
                 # Add the covered positions
-                covered_positions[r["protein"]] |= row_pos
+                kmers_seen |= row_kmers
 
         df = df.drop(index=to_drop)
 

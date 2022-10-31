@@ -1,10 +1,7 @@
 #!/usr/bin/env python
-"""
-"""
 
 import pandas as pd
 import numpy as np
-import phippery
 from phippery.utils import *
 import argparse
 import glob
@@ -92,6 +89,13 @@ def load_from_counts_tsv(
                 right_index=True
         )
 
+    # Add more summary metrics per sample
+    sample_table = sample_table.assign(
+        percent_mapped=sample_table["reads_mapped"] / sample_table["raw_total_sequences"] * 100.,
+        percent_peptides_detected=(merged_counts > 0).mean() * 100.,
+        percent_peptides_between_10_and_100=merged_counts.applymap(lambda v: v >= 10 & v <= 100).mean() * 100.,
+    )
+    
     ds = stitch_dataset(
         counts=merged_counts, 
         peptide_table=peptide_table, 

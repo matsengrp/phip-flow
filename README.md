@@ -22,5 +22,5 @@ Launch the pipeline execution with the following command:
     nextflow run matsengrp/phip-flow -profile docker
 
 Note: the [Dockerfile](docker/Dockerfile) contains all the required dependencies. 
-Add the `-profile docker` to enable the containerised execution to the 
+Add the `-profile docker` to enable the containerized execution to the 
 example command line shown below. 

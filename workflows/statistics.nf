@@ -85,7 +85,7 @@ process fit_predict_neg_binom {
 process fit_predict_zscore {
     input: path phip_data
     output: path "fit_predict_zscore.phip"
-    when: params.run_zscore_fit_predict
+    when: params.run_zscore_fit_predict || params.summarize_by_organism
     shell:
     """
     fit-predict-zscore.py \

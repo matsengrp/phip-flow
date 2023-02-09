@@ -38,21 +38,7 @@ process join_organisms {
     output: path "*.csv.gz"
     when: params.summarize_by_organism
     shell:
-    """#!/usr/bin/env python3
-import os
-import pandas as pd
-
-for suffix in ["peptide.ebs.csv.gz", "organism.summary.csv.gz"]:
-
-    pd.concat([
-        pd.read_csv(
-            os.path.join("input", fp)
-        )
-        for fp in os.listdir("input")
-        if fp.endswith(suffix)
-    ]).to_csv(suffix, index=None)
-
-    """
+    template 'join_organisms.py'
 }
 
 workflow AGG {

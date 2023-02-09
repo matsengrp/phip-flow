@@ -1,4 +1,5 @@
 {
+    "$schema": "https://raw.githubusercontent.com/FredHutch/bash-workbench/main/docs/schema.json",
     "name": "PhIP-Seq",
     "description": "PhIP-Seq common analysis workflows",
     "args": {

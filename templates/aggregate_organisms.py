@@ -326,6 +326,7 @@ class AggregatePhIP:
                 for label, d in [
                     ("all", df),
                     ("public", df.query("public")),
+                    ("hits", df.query("hit == 'TRUE'")),
                 ]
                 if d.shape[0] > 0
                 for k, v in [
@@ -335,7 +336,12 @@ class AggregatePhIP:
                     (f"mean_ebs_{label}", d["EBS"].mean())
                 ]
             }
-        }])
+        }]).drop(
+            columns=[
+                "n_hits_hits",
+                "n_discordant_hits"
+            ]
+        )
 
         return dat
 

@@ -326,6 +326,7 @@ class AggregatePhIP:
                 for label, d in [
                     ("all", df),
                     ("public", df.query("public")),
+                    ("hits", df.query("hit == 'TRUE'")),
                 ]
                 if d.shape[0] > 0
                 for k, v in [
@@ -334,6 +335,7 @@ class AggregatePhIP:
                     (f"max_ebs_{label}", d["EBS"].max()),
                     (f"mean_ebs_{label}", d["EBS"].mean())
                 ]
+                if k not in ["n_hits_hits", "n_discordant_hits"]
             }
         }])
 

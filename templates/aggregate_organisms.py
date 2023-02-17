@@ -335,13 +335,9 @@ class AggregatePhIP:
                     (f"max_ebs_{label}", d["EBS"].max()),
                     (f"mean_ebs_{label}", d["EBS"].mean())
                 ]
+                if k not in ["n_hits_hits", "n_discordant_hits"]
             }
-        }]).drop(
-            columns=[
-                "n_hits_hits",
-                "n_discordant_hits"
-            ]
-        )
+        }])
 
         return dat
 

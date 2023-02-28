@@ -8,6 +8,10 @@ Author: Jared G. Galloway
 // Using DSL-2
 nextflow.enable.dsl=2
 
+// Import a subworkflow to run the BEER enrichment analysis
+// https://bioconductor.org/packages/release/bioc/vignettes/beer/inst/doc/beer.html
+include { beer_enrichment } from './beer.nf'
+
 /*
 AUTOMATICALLY COMPUTED
 ----------------------
@@ -109,7 +113,7 @@ workflow STATS {
     // we automatically compute some stats
     // which are independent of any annotations
     dataset | \
-        (counts_per_million & size_factors) | \
+        (counts_per_million & size_factors & beer_enrichment) | \
         mix | set { auto_stats_ch }
 
     // run some optional statistics which

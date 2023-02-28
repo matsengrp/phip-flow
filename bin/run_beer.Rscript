@@ -1,0 +1,92 @@
+#!/usr/bin/env Rscript
+
+library(beer)
+library(PhIPData)
+library(dplyr)
+
+make_phipdata <- function(){
+
+    # Following https://www.bioconductor.org/packages/release/bioc/vignettes/PhIPData/inst/doc/PhIPData.html
+    # Read in the peptide metadata
+    peptide_info <- read.csv("dataset_peptide_annotation_table.csv")
+
+    # Read in the sample metadata
+    sample_meta <- read.csv("dataset_sample_annotation_table.csv")
+
+    # Rename the group used to identify controls
+    sample_meta <- sample_meta %>% rename("group" = "control_status")
+
+    # Conform to the expected syntax for experiment and controls
+    fix_group <- function(val){
+        if(val == 'empirical'){return('trt')}
+        if(val == 'beads_only'){return('beads')}
+        if(val == 'control'){return('ctrl')}
+        return(val)
+    }
+    sample_meta$group <- sapply(
+        sample_meta$group,
+        fix_group
+    )
+
+    # Read in the counts table
+    counts_dat <- read.csv("dataset_counts.csv", row.names = 1)
+
+    # Make empty tables for the log-fold-change and prob
+    logfc_dat <- prob_dat <- data.frame(
+        matrix(
+        ncol = ncol(counts_dat),
+        nrow = nrow(counts_dat)
+        )
+    )
+
+    # Set row/column names -------------
+    rownames(counts_dat) <- rownames(logfc_dat) <-
+        rownames(prob_dat) <- rownames(peptide_info) <-
+        peptide_info$peptide_id
+
+    colnames(counts_dat) <- colnames(logfc_dat) <-
+        colnames(prob_dat) <- rownames(sample_meta) <-
+        sample_meta$sample_id
+
+    # Experimental metadata -------------
+    exp_meta <- list(date_run = as.Date("2021/01/20"), 
+                    reads_per_sample = colSums(counts_dat))
+
+    # Make the PhIPData object
+    phip_obj <- PhIPData(counts_dat, logfc_dat, prob_dat, 
+                        peptide_info, sample_meta, 
+                        exp_meta)
+
+    return(phip_obj)
+}
+
+# Make the PhIPData object
+phip_obj <- make_phipdata()
+
+# Following https://bioconductor.org/packages/release/bioc/vignettes/beer/inst/doc/beer.html
+
+## Named vector specifying where we want to store the summarized MCMC output
+## NULL indicates that the output should not be stored.
+assay_locations <- c(
+  phi = "beer_fc_marg", 
+  phi_Z = "beer_fc_cond", 
+  Z = "beer_prob", 
+  c = "sampleInfo", 
+  pi = "sampleInfo"
+)
+
+beer_out <- brew(phip_obj, assay.names = assay_locations)
+
+## Define matrix of peptides that were run in BEER
+was_run <- matrix(rep(beer_out$group != "beads", each = nrow(beer_out)), 
+                  nrow = nrow(beer_out))
+
+## Identify super-enriched peptides
+## These peptides were in samples that were run, but have missing posterior 
+## probabilities
+are_se <- was_run & is.na(assay(beer_out, "beer_prob"))
+
+## Enriched peptides are peptides with:
+## - posterior probability > 0.5, OR
+## - super-enriched peptides
+assay(beer_out, "beer_hits") <- assay(beer_out, "beer_prob") > 0.5 | are_se

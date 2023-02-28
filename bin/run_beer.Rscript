@@ -65,6 +65,20 @@ phip_obj <- make_phipdata()
 
 # Following https://bioconductor.org/packages/release/bioc/vignettes/beer/inst/doc/beer.html
 
+# Run edgeR
+edgeR_out <- runEdgeR(
+    phip_obj, 
+    assay.names = c(logfc = "edgeR_logfc",
+                    prob = "edgeR_logpval"))
+
+assay(edgeR_out, "edgeR_hits") <- apply(
+  assay(edgeR_out, "edgeR_logpval"), 2, 
+  function(sample){
+    pval <- 10^(-sample)
+    p.adjust(pval, method = "BH") < 0.05
+  })
+
+
 ## Named vector specifying where we want to store the summarized MCMC output
 ## NULL indicates that the output should not be stored.
 assay_locations <- c(
@@ -75,7 +89,7 @@ assay_locations <- c(
   pi = "sampleInfo"
 )
 
-beer_out <- brew(phip_obj, assay.names = assay_locations)
+beer_out <- brew(edgeR_out, assay.names = assay_locations)
 
 ## Define matrix of peptides that were run in BEER
 was_run <- matrix(rep(beer_out$group != "beads", each = nrow(beer_out)), 

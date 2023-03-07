@@ -20,7 +20,7 @@ make_phipdata <- function(){
     fix_group <- function(val){
         if(val == 'empirical'){return('trt')}
         if(val == 'beads_only'){return('beads')}
-        if(val == 'control'){return('ctrl')}
+        if(val == 'library'){return('ctrl')}
         return(val)
     }
     sample_meta$group <- sapply(

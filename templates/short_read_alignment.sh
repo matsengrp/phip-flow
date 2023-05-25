@@ -8,7 +8,7 @@ documented by bowtie.
 
 We report only the best alignment found, and no more.
 
-You may specify the number of allowed mismatches in the confi file
+You may specify the number of allowed mismatches in the config file
 or hard-code it (or any other options) here.
 '
 

@@ -73,11 +73,6 @@
             "wb_type": "bool",
             "default": false
         },
-        "run_neg_binom_fit_predict": {
-            "help": "Flag for running negative binomial modeling",
-            "wb_type": "bool",
-            "default": false
-        },
         "run_zscore_fit_predict": {
             "help": "Flag for running Z-score enrichment analysis",
             "wb_type": "bool",

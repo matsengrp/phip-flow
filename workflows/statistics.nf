@@ -9,8 +9,8 @@ Author: Jared G. Galloway
 nextflow.enable.dsl=2
 
 // Import a subworkflow to run the BEER enrichment analysis
-// https://bioconductor.org/packages/release/bioc/vignettes/beer/inst/doc/beer.html
-include { beer_enrichment } from './beer.nf'
+// https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeR.html
+include { edgeR_enrichment } from './edgeR.nf'
 
 /*
 AUTOMATICALLY COMPUTED
@@ -113,8 +113,11 @@ workflow STATS {
     // we automatically compute some stats
     // which are independent of any annotations
     dataset | \
-        (counts_per_million & size_factors & beer_enrichment) | \
+        (counts_per_million & size_factors) | \
         mix | set { auto_stats_ch }
+
+    if( params.run_edgeR_save_rds )
+        dataset | edgeR_enrichment
 
     // run some optional statistics which
     // depend on certain annotations

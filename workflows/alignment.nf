@@ -13,7 +13,8 @@ process validate_sample_table {
     """
     validate-sample-table.py \
         -s $samples \
-        -o validated_sample_table.csv
+        -o validated_sample_table.csv \
+        --run_zscore_fit_predict ${params.run_zscore_fit_predict}
     """  
 }
 

@@ -81,7 +81,12 @@ assay(edgeR_out, "edgeR_hits") <- apply(
     p.adjust(pval, method = "BH") < 0.05
   })
 
-saveRDS(phip_obj, "PhIPData.rds")
+saveRDS(edgeR_out, "PhIPData.rds")
+
+# TODO Do these assay objects save the sample (column) order?
+write.csv(assays(edgeR_out)$edgeR_logpval, file="edgeR_logpval.csv")
+write.csv(assays(edgeR_out)$edgeR_logfc, file="edgeR_logfc.csv")
+write.csv(assays(edgeR_out)$edgeR_hits, file="edgeR_hits.csv")
 
 
 # The code below shows how we might run BEER from this point forward.

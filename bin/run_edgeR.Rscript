@@ -4,6 +4,8 @@ library(beer)
 library(PhIPData)
 library(dplyr)
 
+edgeR_threshold = as.double(commandArgs(trailingOnly=TRUE)[1])
+
 make_phipdata <- function(){
 
     # Following https://www.bioconductor.org/packages/release/bioc/vignettes/PhIPData/inst/doc/PhIPData.html
@@ -78,7 +80,7 @@ assay(edgeR_out, "edgeR_hits") <- apply(
   assay(edgeR_out, "edgeR_logpval"), 2, 
   function(sample){
     pval <- 10^(-sample)
-    p.adjust(pval, method = "BH") < 0.05
+    p.adjust(pval, method = "BH") < edgeR_threshold
   })
 
 saveRDS(edgeR_out, "PhIPData.rds")

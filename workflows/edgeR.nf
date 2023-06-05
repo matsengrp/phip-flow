@@ -21,7 +21,7 @@ process run_edgeR {
     tuple path(phip_data), path("edgeR*.csv"), path("*.rds")
     shell:    
     """
-    run_edgeR.Rscript
+    run_edgeR.Rscript ${params.edgeR_threshold}
     mv PhIPData.rds ${params.dataset_prefix}.rds
     """
 }

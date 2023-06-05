@@ -118,6 +118,8 @@ workflow STATS {
 
     if( params.run_edgeR_save_rds )
         dataset | edgeR_enrichment | set { edgeR_ch }
+    else
+        Channel.empty() | set { edgeR_ch }
 
     // run some optional statistics which
     // depend on certain annotations

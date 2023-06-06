@@ -8,6 +8,10 @@ Author: Jared G. Galloway
 // Using DSL-2
 nextflow.enable.dsl=2
 
+// Import a subworkflow to run the BEER enrichment analysis
+// https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeR.html
+include { edgeR_enrichment } from './edgeR.nf'
+
 /*
 AUTOMATICALLY COMPUTED
 ----------------------
@@ -112,6 +116,11 @@ workflow STATS {
         (counts_per_million & size_factors) | \
         mix | set { auto_stats_ch }
 
+    if( params.run_edgeR_save_rds )
+        dataset | edgeR_enrichment | set { edgeR_ch }
+    else
+        Channel.empty() | set { edgeR_ch }
+
     // run some optional statistics which
     // depend on certain annotations
     cpm_fold_enrichment(counts_per_million.out) | set { cpm_fold_enr_ch }
@@ -120,7 +129,8 @@ workflow STATS {
     // collect all the datasets statistics and merge
     auto_stats_ch.concat(
         cpm_fold_enr_ch,
-        fit_pred_zscore_ch
+        fit_pred_zscore_ch,
+        edgeR_ch
     ) | collect | merge_binary_datasets
 
     emit:

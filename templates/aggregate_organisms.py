@@ -1,6 +1,5 @@
 #!/usr/bin/env python3
 
-from collections import defaultdict
 import os
 from typing import List
 import pandas as pd
@@ -74,6 +73,19 @@ class AggregatePhIP:
         self.logger.info(f"Reading in z-scores from: {zscores_fp}")
         assert os.path.exists(zscores_fp)
         self.zscores = pd.read_csv(zscores_fp, index_col=0)
+
+        # Read in the edgeR hits (if present)
+        edgeR_hits_fp = "!{params.dataset_prefix}_edgeR_hits.csv"
+        if os.path.exists(edgeR_hits_fp):
+            self.logger.info(f"Reading in edgeR hits from: {edgeR_hits_fp}")
+            self.edgeR_hits = pd.read_csv(
+                edgeR_hits_fp,
+                index_col=0
+            ).applymap(
+                bool
+            )
+        else:
+            self.edgeR_hits = False
 
         # Group the replicates by sample
         self.logger.info("Grouping replicates by sample")
@@ -223,6 +235,7 @@ class AggregatePhIP:
             n_replicates=len(replicates),
             EBS=df.mean(axis=1),
             hit=df.apply(self.classify_hit, axis=1),
+            edgeR_hit=df.apply(self.classify_edgeR_hit, axis=1) if self.edgeR_hits is not None else None,
             sample='!{sample_id}'
         ).reset_index(
         ).rename(
@@ -250,6 +263,17 @@ class AggregatePhIP:
         if hit_vec.all():
             return "TRUE"
         elif not hit_vec.any():
+            return "FALSE"
+        else:
+            return "DISCORDANT"
+
+    def classify_edgeR_hit(self, r):
+        """Determine whether a peptide is a hit, or discordant - based on edgeR hits."""
+
+        # Determine the hit type
+        if r.all():
+            return "TRUE"
+        elif not r.any():
             return "FALSE"
         else:
             return "DISCORDANT"
@@ -332,6 +356,8 @@ class AggregatePhIP:
                 for k, v in [
                     (f"n_hits_{label}", (d["hit"] == "TRUE").sum()),
                     (f"n_discordant_{label}", (d["hit"] == "DISCORDANT").sum()),
+                    (f"n_edgeR_hits_{label}", (d["edgeR_hit"] == "TRUE").sum()),
+                    (f"n_edgeR_discordant_{label}", (d["edgeR_hit"] == "DISCORDANT").sum()),
                     (f"max_ebs_{label}", d["EBS"].max()),
                     (f"mean_ebs_{label}", d["EBS"].mean())
                 ]

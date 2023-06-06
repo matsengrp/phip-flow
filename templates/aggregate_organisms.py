@@ -85,7 +85,7 @@ class AggregatePhIP:
                 bool
             )
         else:
-            self.edgeR_hits = None
+            self.edgeR_hits = False
 
         # Group the replicates by sample
         self.logger.info("Grouping replicates by sample")
@@ -235,7 +235,7 @@ class AggregatePhIP:
             n_replicates=len(replicates),
             EBS=df.mean(axis=1),
             hit=df.apply(self.classify_hit, axis=1),
-            edgeR_hit=df.apply(self.classify_edgeR_hit, axis=1),
+            edgeR_hit=df.apply(self.classify_edgeR_hit, axis=1) if self.edgeR_hits is not None else None,
             sample='!{sample_id}'
         ).reset_index(
         ).rename(
@@ -356,6 +356,8 @@ class AggregatePhIP:
                 for k, v in [
                     (f"n_hits_{label}", (d["hit"] == "TRUE").sum()),
                     (f"n_discordant_{label}", (d["hit"] == "DISCORDANT").sum()),
+                    (f"n_edgeR_hits_{label}", (d["edgeR_hit"] == "TRUE").sum()),
+                    (f"n_edgeR_discordant_{label}", (d["edgeR_hit"] == "DISCORDANT").sum()),
                     (f"max_ebs_{label}", d["EBS"].max()),
                     (f"mean_ebs_{label}", d["EBS"].mean())
                 ]

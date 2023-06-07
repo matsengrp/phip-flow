@@ -10,7 +10,7 @@ nextflow.enable.dsl=2
 
 // Import a subworkflow to run the BEER enrichment analysis
 // https://bioconductor.org/packages/release/bioc/vignettes/edgeR/inst/doc/edgeR.html
-include { edgeR_enrichment } from './edgeR.nf'
+include { edgeR_BEER_workflows } from './edgeR_BEER.nf'
 
 /*
 AUTOMATICALLY COMPUTED
@@ -116,10 +116,10 @@ workflow STATS {
         (counts_per_million & size_factors) | \
         mix | set { auto_stats_ch }
 
-    if( params.run_edgeR_save_rds )
-        dataset | edgeR_enrichment | set { edgeR_ch }
+    if( params.run_edgeR | params.run_BEER )
+        dataset | edgeR_BEER_workflows | set { edgeR_BEER_ch }
     else
-        Channel.empty() | set { edgeR_ch }
+        Channel.empty() | set { edgeR_BEER_ch }
 
     // run some optional statistics which
     // depend on certain annotations
@@ -130,7 +130,7 @@ workflow STATS {
     auto_stats_ch.concat(
         cpm_fold_enr_ch,
         fit_pred_zscore_ch,
-        edgeR_ch
+        edgeR_BEER_ch
     ) | collect | merge_binary_datasets
 
     emit:

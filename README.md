@@ -3,9 +3,6 @@ A Nextflow pipeline for Common Phage Immuno-Precipitation Sequencing experiments
 See the [Documentation](https://matsengrp.github.io/phippery/introduction.html)
 for more details and usage examples.
 
-[![nextflow]()]()
-[![Build Status]()]()
-
 ## Quickstart 
 
 Install `Nextflow` by using the following command: 
@@ -21,6 +18,6 @@ Launch the pipeline execution with the following command:
 
     nextflow run matsengrp/phip-flow -profile docker
 
-Note: the [Dockerfile](docker/Dockerfile) contains all the required dependencies. 
+Note: the ``phippery`` [Dockerfile](https://github.com/matsengrp/phippery/blob/main/Dockerfile) contains all the required dependencies. 
 Add the `-profile docker` to enable the containerized execution to the 
 example command line shown below. 

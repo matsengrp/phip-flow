@@ -23,8 +23,8 @@ nextflow.enable.dsl = 2
 /*
  * Define the default parameters - example data get's run by default
  */ 
-params.sample_table     = "$baseDir/data/pan-cov-example/sample_table.csv"
-if (params.sample_table != "$baseDir/data/pan-cov-example/sample_table.csv")
+params.sample_table     = "$baseDir/data/pan-cov-example/sample_table_with_beads_and_lib.csv"
+if (params.sample_table != "$baseDir/data/pan-cov-example/sample_table_with_beads_and_lib.csv")
     params.reads_prefix = "$launchDir"
 else
     params.reads_prefix = "$baseDir"

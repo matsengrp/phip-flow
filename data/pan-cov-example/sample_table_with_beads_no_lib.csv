@@ -1,0 +1,7 @@
+technical_replicate_id,submitted_by,library_batch,control_status,sample_ID,sample_type,species,participant_ID,age,sex,race,days_from_symptom_onset,patient_status,source,pandemic_status,fastq_filepath
+572,mackenzie,MEGSUB,beads_only,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,data/pan-cov-example/NGS/expt10B-MEGSUB-4_S4_L001_R1_001.fastq.gz.test.gz
+725,caitlin,SUB2,beads_only,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,NA,data/pan-cov-example/NGS/ex11a-beads-35_S87_L001_R1_001.fastq.gz.test.gz
+90,caitlin,MEGSUB,empirical,80,ACD plasma,human,32C,36.0,Male,White,30.0,conv outpatient 30d,Helen Chu,pandemic,data/pan-cov-example/NGS/rep1-42_S42_L001_R1_001.fastq.gz.test.gz
+382,caitlin,SUB2,empirical,80,ACD plasma,human,32C,36.0,Male,White,30.0,conv outpatient 30d,Helen Chu,pandemic,data/pan-cov-example/NGS/ex8-rep2-42_S87_L001_R1_001.fastq.gz.test.gz
+269,hannah,MEGSUB,empirical,45,serum,human,13a,NA,NA,NA,NA,healthy adult,Chu lab,pre,data/pan-cov-example/NGS/4B-rep1-22_S22_L001_R1_001.fastq.gz.test.gz
+242,caitlin,SUB2,empirical,45,serum,human,13a,NA,NA,NA,NA,healthy adult,Chu lab,pre,data/pan-cov-example/NGS/4A-rep2-22_S49_L001_R1_001.fastq.gz.test.gz

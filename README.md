@@ -16,7 +16,7 @@ various linux flavors
 
 Launch the pipeline execution with the following command: 
 
-    nextflow run matsengrp/phip-flow -profile docker
+    nextflow run matsengrp/phip-flow -r V1.09 -profile docker
 
 Note: the ``phippery`` [Dockerfile](https://github.com/matsengrp/phippery/blob/main/Dockerfile) contains all the required dependencies. 
 Add the `-profile docker` to enable the containerized execution to the 

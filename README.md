@@ -16,8 +16,11 @@ various linux flavors
 
 Launch the pipeline execution with the following command: 
 
-    nextflow run matsengrp/phip-flow -r V1.09 -profile docker
+    nextflow run matsengrp/phip-flow -r V1.10 -profile docker
 
 Note: the ``phippery`` [Dockerfile](https://github.com/matsengrp/phippery/blob/main/Dockerfile) contains all the required dependencies. 
+
+[![Docker Repository on Quay](https://quay.io/repository/hdc-workflows/phippery/status "Docker Repository on Quay")](https://quay.io/repository/hdc-workflows/phippery)
+
 Add the `-profile docker` to enable the containerized execution to the 
 example command line shown below. 

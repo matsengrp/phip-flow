@@ -9,7 +9,7 @@ Install `Nextflow` by using the following command:
 
     curl -s https://get.nextflow.io | bash 
     
-Download the `Docker` Desktop, there exists several distibutions packaged for
+Download the `Docker` Desktop, there exists several distributions packaged for
 various linux flavors
 
     curl -fsSL https://get.docker.com -o get-docker.sh && sudo sh get-docker.sh
@@ -18,12 +18,14 @@ Launch the pipeline execution with the following command:
 
     nextflow run matsengrp/phip-flow -r main -profile docker
 
-Note, the ``-r main`` command runs the bleeding edge. For stable releases we reccomend specifying
-on of the tags associated with a release (e.g. ``-r V1.10``) 
+Note: the ``-r main`` command runs the bleeding edge. For stable releases we recommend specifying
+on of the tags associated with a release (e.g. ``-r V1.10``). You may also specify any of the 
+[parameters](https://matsengrp.github.io/phippery/alignments-pipeline.html#parameters) 
+for changing the input data and workflow behavior.
 
-Note: the ``phippery`` [Dockerfile](https://github.com/matsengrp/phippery/blob/main/Dockerfile) contains all the required dependencies. 
+Note: the ``phippery`` [Dockerfile](https://github.com/matsengrp/phippery/blob/main/Dockerfile) 
+contains all the required dependencies except those for ``EdgeR`` and ``BEER``, 
+for which the maintainers of that package host their own public image.
 
 [![Docker Repository on Quay](https://quay.io/repository/hdc-workflows/phippery/status "Docker Repository on Quay")](https://quay.io/repository/hdc-workflows/phippery)
 
-Add the `-profile docker` to enable the containerized execution to the 
-example command line shown below. 

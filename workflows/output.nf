@@ -6,22 +6,24 @@ nextflow.enable.dsl=2
 process dump_tall_csv {
     publishDir "$params.results/tall_data/", mode: 'copy', overwrite: true
     input: file phip_data
-    output: file "*.csv"
+    output: file "*.csv.gz"
     when: params.output_tall_csv
     shell:
     """
     phippery to-tall-csv -o ${params.dataset_prefix}-tall.csv $phip_data 
+    gzip *
     """
 }
 
 process dump_wide_csv {
     publishDir "$params.results/wide_data/", mode: 'copy', overwrite: true
     input: path phip_data
-    output: path "*.csv"
+    output: path "*.csv.gz"
     when: params.output_wide_csv || params.summarize_by_organism
     shell:
     """
     phippery to-wide-csv -o $params.dataset_prefix $phip_data
+    gzip *
     """
 }
 

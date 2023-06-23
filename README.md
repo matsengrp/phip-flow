@@ -16,7 +16,10 @@ various linux flavors
 
 Launch the pipeline execution with the following command: 
 
-    nextflow run matsengrp/phip-flow -r V1.10 -profile docker
+    nextflow run matsengrp/phip-flow -r main -profile docker
+
+Note, the ``-r main`` command runs the bleeding edge. For stable releases we reccomend specifying
+on of the tags associated with a release (e.g. ``-r V1.10``) 
 
 Note: the ``phippery`` [Dockerfile](https://github.com/matsengrp/phippery/blob/main/Dockerfile) contains all the required dependencies. 
 

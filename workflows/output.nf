@@ -11,7 +11,7 @@ process dump_tall_csv {
     shell:
     """
     phippery to-tall-csv -o ${params.dataset_prefix}-tall.csv $phip_data 
-    gzip *
+    gzip *.csv
     """
 }
 
@@ -23,7 +23,7 @@ process dump_wide_csv {
     shell:
     """
     phippery to-wide-csv -o $params.dataset_prefix $phip_data
-    gzip *
+    gzip *.csv
     """
 }
 

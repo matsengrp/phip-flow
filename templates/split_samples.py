@@ -27,7 +27,7 @@ def setup_logging() -> logging.Logger:
 logger = setup_logging()
 
 # The user must specify a CSV containing the sample mapping
-sample_mapping_fp = "!{params.dataset_prefix}_sample_annotation_table.csv"
+sample_mapping_fp = "!{params.dataset_prefix}_sample_annotation_table.csv.gz"
 logger.info(f"Reading in sample mapping from: {sample_mapping_fp}")
 assert os.path.exists(sample_mapping_fp)
 

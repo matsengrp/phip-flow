@@ -69,13 +69,13 @@ class AggregatePhIP:
         self.logger.info(f"Z-score threshold: {self.zscore_threshold}")
 
         # Read in the z-scores
-        zscores_fp = "!{params.dataset_prefix}_zscore.csv"
+        zscores_fp = "!{params.dataset_prefix}_zscore.csv.gz"
         self.logger.info(f"Reading in z-scores from: {zscores_fp}")
         assert os.path.exists(zscores_fp)
         self.zscores = pd.read_csv(zscores_fp, index_col=0)
 
         # Read in the edgeR hits (if present)
-        edgeR_hits_fp = "!{params.dataset_prefix}_edgeR_hits.csv"
+        edgeR_hits_fp = "!{params.dataset_prefix}_edgeR_hits.csv.gz"
         if os.path.exists(edgeR_hits_fp):
             self.logger.info(f"Reading in edgeR hits from: {edgeR_hits_fp}")
             self.edgeR_hits = pd.read_csv(
@@ -125,7 +125,7 @@ class AggregatePhIP:
         """Read a mapping of replicates to samples."""
 
         # The user must specify a CSV containing the sample mapping
-        sample_mapping_fp = "!{params.dataset_prefix}_sample_annotation_table.csv"
+        sample_mapping_fp = "!{params.dataset_prefix}_sample_annotation_table.csv.gz"
         self.logger.info(f"Reading in sample mapping from: {sample_mapping_fp}")
         assert os.path.exists(sample_mapping_fp)
 
@@ -146,7 +146,7 @@ class AggregatePhIP:
     def read_peptide_mapping(self) -> pd.DataFrame:
         """Read the table mapping peptides (by ID) to organism, protein, and start position ('pos')."""
 
-        peptide_mapping_fp = "!{params.dataset_prefix}_peptide_annotation_table.csv"
+        peptide_mapping_fp = "!{params.dataset_prefix}_peptide_annotation_table.csv.gz"
         self.logger.info(f"Reading in peptide mappings from: {peptide_mapping_fp}")
         assert os.path.exists(peptide_mapping_fp)
 

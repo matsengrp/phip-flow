@@ -69,13 +69,13 @@ class AggregatePhIP:
         self.logger.info(f"Z-score threshold: {self.zscore_threshold}")
 
         # Read in the z-scores
-        zscores_fp = "!{params.dataset_prefix}_zscore.csv"
+        zscores_fp = "!{params.dataset_prefix}_zscore.csv.gz"
         self.logger.info(f"Reading in z-scores from: {zscores_fp}")
         assert os.path.exists(zscores_fp)
         self.zscores = pd.read_csv(zscores_fp, index_col=0)
 
         # Read in the edgeR hits (if present)
-        edgeR_hits_fp = "!{params.dataset_prefix}_edgeR_hits.csv"
+        edgeR_hits_fp = "!{params.dataset_prefix}_edgeR_hits.csv.gz"
         if os.path.exists(edgeR_hits_fp):
             self.logger.info(f"Reading in edgeR hits from: {edgeR_hits_fp}")
             self.edgeR_hits = pd.read_csv(
@@ -101,7 +101,7 @@ class AggregatePhIP:
         # Save to CSV
         self.logger.info("Writing organism-level outputs to CSV")
         self.organism_table.to_csv("!{sample_id}.organism.summary.csv.gz", index=None)
-        
+
         self.logger.info("Done")
 
     def setup_logging(self) -> logging.Logger:
@@ -125,7 +125,7 @@ class AggregatePhIP:
         """Read a mapping of replicates to samples."""
 
         # The user must specify a CSV containing the sample mapping
-        sample_mapping_fp = "!{params.dataset_prefix}_sample_annotation_table.csv"
+        sample_mapping_fp = "!{params.dataset_prefix}_sample_annotation_table.csv.gz"
         self.logger.info(f"Reading in sample mapping from: {sample_mapping_fp}")
         assert os.path.exists(sample_mapping_fp)
 
@@ -133,20 +133,31 @@ class AggregatePhIP:
         df = pd.read_csv(sample_mapping_fp, index_col=0)
         self.logger.info(f"Sample mapping table has {df.shape[0]:,} rows and {df.shape[1]:,} columns")
 
-        # The user must specify the column used to group replicates
+        # If the user specified a column used to group replicates
         # from the same sample
         sample_grouping_col = "!{params.sample_grouping_col}"
+        if len(sample_grouping_col) > 0:
 
-        msg = f"Column '{sample_grouping_col}' not found ({', '.join(df.columns.values)})"
-        assert sample_grouping_col in df.columns.values, msg
+            # Make sure that the column is present in the table
+            msg = f"Column '{sample_grouping_col}' not found ({', '.join(df.columns.values)})"
+            assert sample_grouping_col in df.columns.values, msg
 
-        # Return the column mapping of replicates to samples
-        return df[sample_grouping_col]
+            # Return the column mapping of replicates to samples
+            return df[sample_grouping_col]
+
+        # Otherwise, if no grouping was specified
+        else:
+
+            # Just treat each sample the same
+            return {
+                int(replicate_id): str(replicate_id)
+                for replicate_id in df.index.values
+            }
 
     def read_peptide_mapping(self) -> pd.DataFrame:
         """Read the table mapping peptides (by ID) to organism, protein, and start position ('pos')."""
 
-        peptide_mapping_fp = "!{params.dataset_prefix}_peptide_annotation_table.csv"
+        peptide_mapping_fp = "!{params.dataset_prefix}_peptide_annotation_table.csv.gz"
         self.logger.info(f"Reading in peptide mappings from: {peptide_mapping_fp}")
         assert os.path.exists(peptide_mapping_fp)
 

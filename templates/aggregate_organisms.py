@@ -101,7 +101,7 @@ class AggregatePhIP:
         # Save to CSV
         self.logger.info("Writing organism-level outputs to CSV")
         self.organism_table.to_csv("!{sample_id}.organism.summary.csv.gz", index=None)
-        
+
         self.logger.info("Done")
 
     def setup_logging(self) -> logging.Logger:
@@ -133,15 +133,26 @@ class AggregatePhIP:
         df = pd.read_csv(sample_mapping_fp, index_col=0)
         self.logger.info(f"Sample mapping table has {df.shape[0]:,} rows and {df.shape[1]:,} columns")
 
-        # The user must specify the column used to group replicates
+        # If the user specified a column used to group replicates
         # from the same sample
         sample_grouping_col = "!{params.sample_grouping_col}"
+        if len(sample_grouping_col) > 0:
 
-        msg = f"Column '{sample_grouping_col}' not found ({', '.join(df.columns.values)})"
-        assert sample_grouping_col in df.columns.values, msg
+            # Make sure that the column is present in the table
+            msg = f"Column '{sample_grouping_col}' not found ({', '.join(df.columns.values)})"
+            assert sample_grouping_col in df.columns.values, msg
 
-        # Return the column mapping of replicates to samples
-        return df[sample_grouping_col]
+            # Return the column mapping of replicates to samples
+            return df[sample_grouping_col]
+
+        # Otherwise, if no grouping was specified
+        else:
+
+            # Just treat each sample the same
+            return {
+                int(replicate_id): str(replicate_id)
+                for replicate_id in df.index.values
+            }
 
     def read_peptide_mapping(self) -> pd.DataFrame:
         """Read the table mapping peptides (by ID) to organism, protein, and start position ('pos')."""

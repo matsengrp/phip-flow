@@ -16,7 +16,7 @@ various linux flavors
 
 Launch the pipeline execution with the following command: 
 
-    nextflow run matsengrp/phip-flow -r V1.11 -profile docker
+    nextflow run matsengrp/phip-flow -r V1.12 -profile docker
 
 Note: the ``-r VX.XX`` command runs the specified stable release version of the pipeline. 
 For running the bleeding edge (not generally recommended) you may also specify ``-r main``.

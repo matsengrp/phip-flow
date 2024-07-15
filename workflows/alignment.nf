@@ -139,7 +139,10 @@ workflow ALIGN {
                 tuple(
                     "peptide_ref",
                     row.sample_id,
-                    file("$params.reads_prefix/$row.fastq_filepath")
+                    file(
+                        "$params.reads_prefix/$row.fastq_filepath",
+                        checkIfExists:true
+                    )
                 ) 
             }
             .set { samples_ch }

@@ -247,7 +247,11 @@ class AggregatePhIP:
             n_replicates=len(replicates),
             EBS=df.mean(axis=1),
             hit=df.apply(self.classify_hit, axis=1),
-            edgeR_hit=df.apply(self.classify_edgeR_hit, axis=1) if self.edgeR_hits is not None else None,
+            edgeR_hit=(
+                df.apply(self.classify_edgeR_hit, axis=1)
+                if self.edgeR_hits is not None
+                else None
+            ),
             sample='!{sample_id}'
         ).reset_index(
         ).rename(
@@ -268,7 +272,8 @@ class AggregatePhIP:
     def classify_hit(self, r):
         """Determine whether a peptide is a hit, or discordant."""
 
-        # Get the vector of whether each replicate is above the z-score threshold
+        # Get the vector of whether each replicate
+        # is above the z-score threshold
         hit_vec = r > self.zscore_threshold
 
         # Determine the hit type
@@ -280,7 +285,10 @@ class AggregatePhIP:
             return "DISCORDANT"
 
     def classify_edgeR_hit(self, r):
-        """Determine whether a peptide is a hit, or discordant - based on edgeR hits."""
+        """
+        Determine whether a peptide is a hit, or discordant - 
+        based on edgeR hits.
+        """
 
         # Determine the hit type
         if r.all():
@@ -309,7 +317,13 @@ class AggregatePhIP:
 
         return df
 
-    def group_sample_organisms(self, df:pd.DataFrame, sample:str, organism:str) -> pd.DataFrame:
+    def group_sample_organisms(
+        self,
+        df: pd.DataFrame,
+        sample: str,
+        organism: str
+    ) -> pd.DataFrame:
+
         """Analyze the data for a single sample, single organism."""
 
         # Add the sequence information for each peptide

@@ -4,6 +4,7 @@ import os
 from typing import List
 import pandas as pd
 import logging
+from scipy.stats import gmean
 
 # APPROACH
 
@@ -18,7 +19,7 @@ import logging
 #       marked as FALSE if both replicates are below the threshold Z-score
 #       marked as DISCORDANT if some but not all replicates are above the threshold Z-score
 #   Public: marked as TRUE if the epitope was included in the input list of public epitopes
- 
+
 # 3. To combine the virus-level data for each sample, only keep the highest-scoring
 # set of epitopes which do not overlap with any other epitope by more than 7aa.
 # To identify overlaps, use an exact alignment approach using k-mers. Note that this
@@ -34,7 +35,7 @@ import logging
 #   Max EBS across public epitopes
 #   Mean EBS across all epitopes
 #   Mean EBS across public epitopes
- 
+
 
 # INPUTS
 
@@ -370,9 +371,15 @@ class AggregatePhIP:
                     (f"n_edgeR_hits_{label}", (d["edgeR_hit"] == "TRUE").sum()),
                     (f"n_edgeR_discordant_{label}", (d["edgeR_hit"] == "DISCORDANT").sum()),
                     (f"max_ebs_{label}", d["EBS"].max()),
-                    (f"mean_ebs_{label}", d["EBS"].mean())
+                    (f"mean_ebs_{label}", d["EBS"].mean()),
+                    (f"gmean_ebs_{label}", gmean(d["EBS"]))
                 ]
-                if k not in ["n_hits_hits", "n_discordant_hits"]
+                if k not in [
+                    "n_hits_hits",
+                    "n_discordant_hits",
+                    "gmean_ebs_all",
+                    "gmean_ebs_public"
+                ]
             }
         }])
 

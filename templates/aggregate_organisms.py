@@ -252,8 +252,8 @@ class AggregatePhIP:
             EBS=df.mean(axis=1),
             hit=df.apply(self.classify_hit, axis=1),
             edgeR_hit=(
-                df.apply(self.classify_edgeR_hit, axis=1)
-                if self.edgeR_hits is not None
+                self.edgeR_hits.apply(self.classify_edgeR_hit, axis=1)
+                if self.edgeR_hits
                 else None
             ),
             sample='!{sample_id}'
@@ -261,7 +261,9 @@ class AggregatePhIP:
         ).rename(
             columns=dict(index="peptide")
         ).drop(
-            columns=replicates
+            columns=replicates + (
+                ["edgeR_hit"] if not self.edgeR_hits else []
+            )
         )
 
         # Mark whether each peptide is public

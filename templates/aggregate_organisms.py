@@ -252,8 +252,8 @@ class AggregatePhIP:
             EBS=df.mean(axis=1),
             hit=df.apply(self.classify_hit, axis=1),
             edgeR_hit=(
-                df.apply(self.classify_edgeR_hit, axis=1)
-                if self.edgeR_hits is not None
+                self.edgeR_hits.apply(self.classify_edgeR_hit, axis=1)
+                if self.edgeR_hits
                 else None
             ),
             sample='!{sample_id}'
@@ -261,7 +261,9 @@ class AggregatePhIP:
         ).rename(
             columns=dict(index="peptide")
         ).drop(
-            columns=replicates
+            columns=replicates + (
+                ["edgeR_hit"] if self.edgeR_hits else []
+            )
         )
 
         # Mark whether each peptide is public
@@ -420,12 +422,17 @@ class AggregatePhIP:
                 for k, v in [
                     (f"n_hits_{label}", (d["hit"] == "TRUE").sum()),
                     (f"n_discordant_{label}", (d["hit"] == "DISCORDANT").sum()),
-                    (f"n_edgeR_hits_{label}", (d["edgeR_hit"] == "TRUE").sum()),
-                    (f"n_edgeR_discordant_{label}", (d["edgeR_hit"] == "DISCORDANT").sum()),
                     (f"max_ebs_{label}", d["EBS"].max()),
                     (f"mean_ebs_{label}", d["EBS"].mean()),
                     (f"gmean_ebs_{label}", gmean(d["EBS"]))
-                ]
+                ] + (
+                    [
+                        (f"n_edgeR_hits_{label}", (d["edgeR_hit"] == "TRUE").sum()),
+                        (f"n_edgeR_discordant_{label}", (d["edgeR_hit"] == "DISCORDANT").sum()),
+                    ]
+                    if self.edgeR_hits
+                    else []
+                )
                 if k not in [
                     "n_hits_hits",
                     "n_discordant_hits",

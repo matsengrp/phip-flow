@@ -28,6 +28,7 @@ def replicate_oligo_counts(ds, peptide_oligo_feature="Oligo"):
     Currently, this function only sets the raw counts, in place.
     """
 
+    # TODO remove this code
     # find all value counts greater than 1,
     #pep_anno_table = get_annotation_table(ds, "peptide")
     #oligo_vc = pep_anno_table["Oligo"].value_counts()

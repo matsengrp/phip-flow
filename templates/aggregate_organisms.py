@@ -81,9 +81,10 @@ class AggregatePhIP:
             self.logger.info(f"Reading in edgeR hits from: {edgeR_hits_fp}")
             self.edgeR_hits = pd.read_csv(
                 edgeR_hits_fp,
-                index_col=0
-            ).applymap(
-                bool
+                index_col=0,
+                true_values=["TRUE", "True", "true"],
+                false_values=["FALSE", "False", "false"],
+                na_values="NA"
             )
             self.has_edgeR_hits = True
         else:

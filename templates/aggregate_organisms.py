@@ -81,9 +81,10 @@ class AggregatePhIP:
             self.logger.info(f"Reading in edgeR hits from: {edgeR_hits_fp}")
             self.edgeR_hits = pd.read_csv(
                 edgeR_hits_fp,
-                index_col=0
-            ).applymap(
-                bool
+                index_col=0,
+                true_values=["TRUE", "True", "true"],
+                false_values=["FALSE", "False", "false"],
+                na_values=["NA", "N/A", "Na", "na", "n/a"]
             )
             self.has_edgeR_hits = True
         else:
@@ -246,7 +247,10 @@ class AggregatePhIP:
 
         # Take a slice of the table
         df = self.zscores.reindex(columns=replicates)
-
+        # If we have edgeR data, filter it to the same replicates
+        if self.has_edgeR_hits:
+            self.edgeR_hits = self.edgeR_hits.reindex(columns=replicates)
+            
         # Add summary metrics
         df = df.assign(
             n_replicates=len(replicates),
@@ -296,6 +300,11 @@ class AggregatePhIP:
         Determine whether a peptide is a hit, or discordant - 
         based on edgeR hits.
         """
+
+        # Drop NA values before classification
+        r = r.dropna()
+        if len(r) == 0:  # If all values were NA
+            return "NA"
 
         # Determine the hit type
         if r.all():
